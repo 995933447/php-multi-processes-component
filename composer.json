@@ -1,0 +1,16 @@
+{
+    "name": "bobby/multi-processes",
+    "description": "php原生pcntl实现的简易进程池工具",
+    "authors": [
+        {
+            "name": "bobby",
+            "email": "995933447@qq.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Bobby\\MultiProcesses\\": "src/"
+        }
+    }
+}
