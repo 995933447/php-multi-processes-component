@@ -1,4 +1,7 @@
 <?php
+/**
+ * 多进程封装类
+ */
 namespace Bobby\MultiProcesses;
 
 class Process
@@ -53,7 +56,7 @@ class Process
     {
         if (!$this->writePort) {
             $file = $this->isMaster? $this->masterWritablePipe: $this->workerWritablePipe;
-            $this->makeFifo($file);
+            $this->makePipe($file);
             $this->writePort = fopen($file, 'w');
         }
         fwrite($this->writePort, serialize($message));
@@ -63,7 +66,7 @@ class Process
     {
         if (!$this->readPort) {
             $file = $this->isMaster? $this->workerWritablePipe: $this->masterWritablePipe;
-            $this->makeFifo($file);
+            $this->makePipe($file);
             $this->readPort = fopen($file, 'r');
             stream_set_blocking($this->readPort, false);
         }
@@ -75,10 +78,10 @@ class Process
         }
     }
 
-    protected function makeFifo(string $file)
+    protected function makePipe(string $file)
     {
         if (!file_exists($file)) {
-            if (!posix_mkfifo($file, 0666)) {
+            if (!posix_mkfifo($file, 0777)) {
                 throw new \Exception("Crate fifo fail.");
             }
         }
@@ -164,6 +167,11 @@ class Process
     public function closePipes()
     {
         $this->writePort && fclose($this->writePort) && $this->readPort && fclose($this->readPort);
+    }
+
+    public function clearPipes()
+    {
+        file_exists($this->masterWritablePipe) && unlink($this->masterWritablePipe) && file_exists($this->workerWritablePipe) && unlink($this->workerWritablePipe);
     }
 
     public static function signal($callable = SIG_IGN)
