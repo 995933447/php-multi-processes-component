@@ -125,6 +125,8 @@ class Process
 
                 call_user_func_array($this->callback, array_merge([$this], func_get_args()));
 
+                $this->closePipes();
+
                 exit(0);
             }
         }
@@ -153,11 +155,13 @@ class Process
 
             call_user_func_array($this->callback, array_merge([$this], func_get_args()));
 
+            $this->closePipes();
+
             exit(0);
         }
     }
 
-    public function closePipe()
+    public function closePipes()
     {
         $this->writePort && fclose($this->writePort) && $this->readPort && fclose($this->readPort);
     }

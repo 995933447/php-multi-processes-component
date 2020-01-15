@@ -17,3 +17,6 @@ cli_set_process_title("parent php process.");
 echo "I am father, my pid is " . posix_getpid() . ", my children is $pid" . PHP_EOL;
 
 $process->write("Hello my child!");
+
+Process::signal();
+Process::wait();
