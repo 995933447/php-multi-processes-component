@@ -5,9 +5,7 @@
 namespace Bobby\MultiProcesses;
 
 class Process
-{    
-    protected $name;
-
+{
     protected $masterWritablePipe;
 
     protected $workerWritablePipe;
@@ -22,6 +20,10 @@ class Process
 
     protected $isMaster = true;
 
+    protected $name;
+
+    protected static $hasListenedChildSignal = false;
+
     public function __construct(callable $callback, bool $isDaemon = false)
     {
         $this->callback = $callback;
@@ -31,12 +33,14 @@ class Process
     public function setName(string $name)
     {
         $this->name = $name;
-        cli_set_process_title($name);
+        if (!$this->isMaster) {
+            cli_set_process_title($name);
+        }
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
-        return $this->name;
+        return cli_get_process_title();
     }
 
     public function setPipes(string $masterWritablePipe, string $workerWritablePipe)
@@ -54,15 +58,25 @@ class Process
 
     public function write($message)
     {
+        $this->writeString(serialize($message));
+    }
+
+    public function writeString(string $message)
+    {
         if (!$this->writePort) {
             $file = $this->isMaster? $this->masterWritablePipe: $this->workerWritablePipe;
             $this->makePipe($file);
             $this->writePort = fopen($file, 'w');
         }
-        fwrite($this->writePort, serialize($message));
+        fwrite($this->writePort, $message);
     }
 
-    public function read(bool $isBlock = false)
+    public function read()
+    {
+        return unserialize($this->readString());
+    }
+
+    public function readString(): string
     {
         if (!$this->readPort) {
             $file = $this->isMaster? $this->workerWritablePipe: $this->masterWritablePipe;
@@ -71,10 +85,10 @@ class Process
             stream_set_blocking($this->readPort, false);
         }
 
-        $reads = $writes = $exceps = [];
+        $reads = $writes = $excepts = [];
         $reads[] = $this->readPort;
-        if (stream_select($reads, $writes, $exceps, null)) {
-            return unserialize(stream_get_contents($this->readPort));
+        if (stream_select($reads, $writes, $excepts, null)) {
+            return stream_get_contents($this->readPort);
         }
     }
 
@@ -82,7 +96,7 @@ class Process
     {
         if (!file_exists($file)) {
             if (!posix_mkfifo($file, 0777)) {
-                throw new \Exception("Crate fifo fail.");
+                throw new ProcessException("Crate fifo fail.");
             }
         }
     }
@@ -100,26 +114,26 @@ class Process
     protected function startAsDaemon()
     {
         if (($pid = pcntl_fork()) < 0) {
-            throw new \Exception("Fork child process fail.");
+            throw new ProcessException("Fork child process fail.");
         }
 
         if ($pid === 0) {
             $this->isMaster = false;
 
             if (posix_setsid() === -1) {
-                die("Create session fail.");
+                throw new ProcessException("Create session fail.");
             };
 
             if (($daemonPid = pcntl_fork()) < 0) {
-                 die("Fork damon child process fail.");
+                throw new ProcessException("Fork damon child process fail.");
             }
 
             if ($daemonPid > 0) {
                 $this->write($daemonPid);
                 exit(0);
             } else {
-                if (!empty($name = $this->getName()) && cli_get_process_title() != $name) {
-                    $this->setName($name);
+                if ($this->name) {
+                    cli_set_process_title($this->name);
                 }
 
                 umask(0);
@@ -140,21 +154,17 @@ class Process
     protected function startAsNotDaemon()
     {
         if (($pid = pcntl_fork()) < 0) {
-            if ($this->name) {
-                throw new \Exception("Fork child process: {$this->name} fail.");
-            } else {
-                throw new \Exception("Fork child process fail.");
-            }
+                throw new ProcessException("Fork child process fail.");
         }
 
         if ($pid > 0) {
             return $pid;
         } else {
-            $this->isMaster = false;
-
-            if (!empty($name = $this->getName()) && cli_get_process_title() != $name) {
-                $this->setName($name);
+            if ($this->name) {
+                cli_set_process_title($this->name);
             }
+
+            $this->isMaster = false;
 
             call_user_func_array($this->callback, array_merge([$this], func_get_args()));
 
@@ -174,13 +184,18 @@ class Process
         file_exists($this->masterWritablePipe) && unlink($this->masterWritablePipe) && file_exists($this->workerWritablePipe) && unlink($this->workerWritablePipe);
     }
 
-    public static function signal($callable = SIG_IGN)
+    public static function listenChildSignal($callable = SIG_IGN)
     {
         pcntl_signal(SIGCHLD, $callable);
+        static::$hasListenedChildSignal = true;
     }
 
-    public static function wait()
+    public static function collect()
     {
+        if (!static::$hasListenedChildSignal) {
+            static::listenChildSignal();
+        }
+
         while (1) {
             pcntl_signal_dispatch();
         }

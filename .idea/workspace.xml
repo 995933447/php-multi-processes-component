@@ -1,18 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="0a68eee3-cafc-4fb4-abca-5421fc785e16" name="Default Changelist" comment="" />
+    <list default="true" id="0a68eee3-cafc-4fb4-abca-5421fc785e16" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/1.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/hello.php" beforeDir="false" afterPath="$PROJECT_DIR$/examples/hello.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/jobQueue" beforeDir="false" afterPath="$PROJECT_DIR$/src/ProcessException.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/queue" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/test.php" beforeDir="false" afterPath="$PROJECT_DIR$/examples/test.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/test.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Process.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Process.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ProcessPool.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ProcessPool.php" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ComposerSettings" synchronizationState="SYNCHRONIZE">
+  <component name="ComposerSettings" doNotAsk="true" synchronizationState="SYNCHRONIZE">
     <pharConfigPath>$PROJECT_DIR$/composer.json</pharConfigPath>
     <execution>
       <executable />
     </execution>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="PhpWorkspaceProjectConfiguration">
     <include_path>
@@ -20,9 +33,10 @@
     </include_path>
   </component>
   <component name="ProjectId" id="1WKfYANGpPVL8h6vZfTW4FINUWI" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../fork.php" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -52,10 +66,25 @@
       <option name="presentableId" value="Default" />
       <updated>1578903251493</updated>
       <workItem from="1578903252731" duration="23575000" />
+      <workItem from="1579137411735" duration="485000" />
+      <workItem from="1579143131613" duration="7883000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

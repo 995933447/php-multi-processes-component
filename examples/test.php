@@ -5,9 +5,10 @@ declare(ticks=1);
 // 普通文件可以同时对一个文件描述符进行读写,mkfifo只能用户进程间通信。必须一个进程只能进行读操作（文件描述符操作方式为r，r+,w+,a+均不合法）或写操作（文件描述符操作方式为w，r+,w+,a+均不合法）其中之一
 $nomalFile = '1.txt';
 $normalFd = fopen($nomalFile, 'w+');
-fwrite($normalFd, 'hello world!');
+fwrite($normalFd,1234);
 fseek($normalFd, 0);
 $content = fread($normalFd, 1024);
+var_dump($content);
 echo "normal file content: $content" . PHP_EOL;
 
 cli_set_process_title("Test fifo");

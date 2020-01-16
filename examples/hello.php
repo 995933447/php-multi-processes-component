@@ -4,11 +4,15 @@ require __DIR__ . '/../vendor/autoload.php';
 use Bobby\MultiProcesses\Process;
 
 $process = new Process(function (Process $process) {
-    $process->setName("children php process.");
     echo "Hello, Im children, My pid is " . posix_getpid() . PHP_EOL;
     $masterData = $process->read();
     echo "My master send data:$masterData to me." . PHP_EOL;
+    
+    $process->clearPipes();
+    sleep(80);
 }, true);
+
+$process->setName("child php process.");
 
 $pid = $process->run();
 
@@ -18,5 +22,4 @@ echo "I am father, my pid is " . posix_getpid() . ", my children is $pid" . PHP_
 
 $process->write("Hello my child!");
 
-Process::signal();
-Process::wait();
+Process::collect();
