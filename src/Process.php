@@ -10,9 +10,7 @@ class Process
 
     protected $workerWritablePipe;
 
-    protected $writePort;
-
-    protected $readPort;
+    protected $pipes;
 
     protected $callback;
 
@@ -38,7 +36,12 @@ class Process
         }
     }
 
-    public function getName(): string
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    public function getRealName(): string
     {
         return cli_get_process_title();
     }
@@ -52,53 +55,38 @@ class Process
     public function setDefaultPipesIfNotSet()
     {
         if (!$this->masterWritablePipe || !$this->workerWritablePipe) {
-            $this->setPipes(sprintf("/tmp/%s", uniqid()), sprintf("/tmp/%s", uniqid()));
+            $format = sys_get_temp_dir() . "/BOBBY_PROCESS_%s";
+            $this->setPipes(sprintf($format, uniqid()), sprintf($format, uniqid()));
         }
     }
 
     public function write($message)
     {
-        $this->writeString(serialize($message));
+        $this->writeString(MessagePacker::serialize($message));
     }
 
     public function writeString(string $message)
     {
-        if (!$this->writePort) {
-            $file = $this->isMaster? $this->masterWritablePipe: $this->workerWritablePipe;
-            $this->makePipe($file);
-            $this->writePort = fopen($file, 'w');
-        }
-        fwrite($this->writePort, $message);
+        $this->makePipes()->write($message);
     }
 
     public function read()
     {
-        return unserialize($this->readString());
+        return MessagePacker::unserialize($this->readString());
     }
 
     public function readString(): string
     {
-        if (!$this->readPort) {
-            $file = $this->isMaster? $this->workerWritablePipe: $this->masterWritablePipe;
-            $this->makePipe($file);
-            $this->readPort = fopen($file, 'r');
-            stream_set_blocking($this->readPort, false);
-        }
-
-        $reads = $writes = $excepts = [];
-        $reads[] = $this->readPort;
-        if (stream_select($reads, $writes, $excepts, null)) {
-            return stream_get_contents($this->readPort);
-        }
+        return $this->makePipes()->read();
     }
 
-    protected function makePipe(string $file)
+    protected function makePipes()
     {
-        if (!file_exists($file)) {
-            if (!posix_mkfifo($file, 0777)) {
-                throw new ProcessException("Crate fifo fail.");
-            }
+        if (!$this->pipes) {
+            return $this->pipes = $this->isMaster? new Pipes($this->masterWritablePipe, $this->workerWritablePipe): new Pipes($this->workerWritablePipe, $this->masterWritablePipe);
         }
+
+        return $this->pipes;
     }
 
     public function run()
@@ -130,10 +118,11 @@ class Process
 
             if ($daemonPid > 0) {
                 $this->write($daemonPid);
+
                 exit(0);
             } else {
                 if ($this->name) {
-                    cli_set_process_title($this->name);
+                    $this->setName($this->name);
                 }
 
                 umask(0);
@@ -148,7 +137,7 @@ class Process
             }
         }
 
-        return $this->read(true);
+        return $this->read();
     }
 
     protected function startAsNotDaemon()
@@ -160,11 +149,11 @@ class Process
         if ($pid > 0) {
             return $pid;
         } else {
-            if ($this->name) {
-                cli_set_process_title($this->name);
-            }
-
             $this->isMaster = false;
+
+            if ($this->name) {
+                $this->setName($this->name);
+            }
 
             call_user_func_array($this->callback, array_merge([$this], func_get_args()));
 
@@ -176,26 +165,27 @@ class Process
 
     public function closePipes()
     {
-        $this->writePort && fclose($this->writePort) && $this->readPort && fclose($this->readPort);
+        $this->pipes->closePipes();
     }
 
     public function clearPipes()
     {
-        file_exists($this->masterWritablePipe) && unlink($this->masterWritablePipe) && file_exists($this->workerWritablePipe) && unlink($this->workerWritablePipe);
+        $this->pipes->clearPipes();
     }
 
-    public static function listenChildSignal($callable = SIG_IGN)
+    public static function onCollect(?callable $callback = null)
     {
-        pcntl_signal(SIGCHLD, $callable);
-        static::$hasListenedChildSignal = true;
+        pcntl_signal(SIGCHLD, $callback?: function ($signo) {
+            while (1) {
+                if (pcntl_wait($status, WNOHANG) <= 0) {
+                    break;
+                }
+            }
+        });
     }
 
     public static function collect()
     {
-        if (!static::$hasListenedChildSignal) {
-            static::listenChildSignal();
-        }
-
         while (1) {
             pcntl_signal_dispatch();
         }

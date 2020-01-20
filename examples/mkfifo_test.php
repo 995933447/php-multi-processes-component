@@ -1,6 +1,6 @@
 <?php
 declare(ticks=1);
-// posxi_mkfifo 使用说明
+// posxi_mkfifo 使用测试
 
 // 普通文件可以同时对一个文件描述符进行读写,mkfifo只能用户进程间通信。必须一个进程只能进行读操作（文件描述符操作方式为r，r+,w+,a+均不合法）或写操作（文件描述符操作方式为w，r+,w+,a+均不合法）其中之一
 $nomalFile = '1.txt';
