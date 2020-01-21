@@ -11,10 +11,13 @@ class Pipes
 
     protected $readablePipe;
 
-    public function __construct(string $writablePipe, string $readablePipe)
+    protected $messagePacker;
+
+    public function __construct(string $writablePipe, string $readablePipe, MessagePacker $messagePacker = null)
     {
         $this->writablePipe = $writablePipe;
         $this->readablePipe = $readablePipe;
+        $this->messagePacker = $messagePacker?: new MessagePacker(md5(__FILE__ . '~!@'));
     }
 
     public function makePipe(string $file)
@@ -32,17 +35,25 @@ class Pipes
             $this->makePipe($this->writablePipe);
             $this->writePort = fopen($this->writablePipe, 'w');
         }
-        if (!fwrite($this->writePort, $message)) {
+
+        if (($written = fwrite($this->writePort, $this->messagePacker->pack($message))) === false) {
             throw new ProcessException("write pipe $message fail.");
         };
+
         fflush($this->writePort);
+
+        return $written;
     }
 
     public function read(bool $block = true): string
     {
+        if ($this->messagePacker->hasMessageFromBuffer()) {
+            return $this->messagePacker->getMessageFromBuffer();
+        }
+
         if (!$this->readPort) {
             $this->makePipe($this->readablePipe);
-            $this->readPort = fopen($this->readablePipe, 'rw');
+            $this->readPort = fopen($this->readablePipe, 'r');
             stream_set_blocking($this->readPort, false);
         }
 
@@ -51,11 +62,14 @@ class Pipes
             $reads[] = $this->readPort;
             if (stream_select($reads, $writes, $excepts, null)) {
                 if ($content = stream_get_contents($this->readPort)) {
-                    return $content;
+                    $this->messagePacker->unpackToBuffer($content);
+                    if ($this->messagePacker->hasMessageFromBuffer()) {
+                        return $this->messagePacker->getMessageFromBuffer();
+                    }
                 };
-      
+
                 if (!$block) {
-                    return $content;
+                    return '';
                 }
             }
         }

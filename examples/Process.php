@@ -5,9 +5,10 @@ use Bobby\MultiProcesses\Process;
 
 $process = new Process(function (Process $process) {
     echo "Hello, Im children, My pid is " . posix_getpid() . PHP_EOL;
+
     $masterData = $process->read();
     echo "My master send data:$masterData to me." . PHP_EOL . PHP_EOL;
-    
+
     $masterData = $process->read();
     echo "My master send data2:$masterData to me." . PHP_EOL . PHP_EOL;
 
@@ -27,19 +28,18 @@ declare(ticks = 1);
 Process::onCollect();
 
 $processes = [];
-for ($i = 0; $i < 4; $i++) {
+for ($i = 0; $i < 1; $i++) {
     $processCloned = clone $process;
     $pid = $processCloned->run();
     echo "I am father, my pid is " . posix_getpid() . ", my children is $pid" . PHP_EOL;
     $processCloned->write("Hello my child!");
-    sleep(1);
-    $processCloned->write('uuu');
+    $processCloned->write('u;uu');
     $processes[] = $processCloned;
 }
 
 foreach ($processes as $process) {
-    sleep(1);
-    $process->write('Uuu2');
+//    sleep(1);
+    $process->write('U;uu2');
 }
 
 // Process::collect();

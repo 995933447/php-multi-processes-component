@@ -20,8 +20,6 @@ class Process
 
     protected $name;
 
-    protected static $hasListenedChildSignal = false;
-
     public function __construct(callable $callback, bool $isDaemon = false)
     {
         $this->callback = $callback;

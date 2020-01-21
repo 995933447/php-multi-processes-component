@@ -6,12 +6,13 @@ use Bobby\MultiProcesses\Pool;
 
 $worker = new Worker(0, function (Worker $worker) {
     $workerId = $worker->getWorkerId();
+
     while ($masterData = $worker->read()) {
         $worker->asUsing();
         echo "I am worker:$workerId,My master send data:$masterData to me." . PHP_EOL;
         $worker->finish();
     }
-    var_dump($masterData);
+
     echo "Work:$workerId exit($masterData)" . PHP_EOL;
 }, true);
 
