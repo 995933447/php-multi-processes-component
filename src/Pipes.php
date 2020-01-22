@@ -25,6 +25,7 @@ class Pipes
         if (!file_exists($file)) {
             if (!posix_mkfifo($file, 0777)) {
                 throw new ProcessException("Crate pipe fifo fail.");
+                Quit::exceptionQuit();
             }
         }
     }
@@ -38,6 +39,7 @@ class Pipes
 
         if (($written = fwrite($this->writePort, $this->messagePacker->pack($message))) === false) {
             throw new ProcessException("write pipe $message fail.");
+            Quit::exceptionQuit();
         };
 
         fflush($this->writePort);

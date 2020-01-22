@@ -8,17 +8,19 @@ $worker = new Worker(0, function (Worker $worker) {
     $workerId = $worker->getWorkerId();
 
     while ($masterData = $worker->read()) {
-        $worker->asUsing();
+        $worker->use();
         echo "I am worker:$workerId,My master send data:$masterData to me." . PHP_EOL;
-        $worker->finish();
+        sleep(2);
+        $worker->free();
+        var_dump("worker id:$workerId using state:" . (int)$worker->isUsing());
     }
 
     echo "Work:$workerId exit($masterData)" . PHP_EOL;
 }, true);
-
 $worker->setName('Pool worker');
 
 $pool = new Pool(3, $worker);
+$pool->getMinIdleWorkerNum(2);
 
 declare(ticks = 1);
 Pool::onCollect();
@@ -32,9 +34,13 @@ for ($i = 0; $i < $workersNum; $i++) {
     $worker->write($msg);
 }
 
-sleep(1);
-
 $pool->broadcast("broadcasting.");
+sleep(10);
+
+while ($worker = $pool->getIdleWorker()) {
+    echo "poped:" . $worker->getWorkerId() . "\r\n";
+    $worker->write("\ ^ . ^ /");
+}
 
 echo "finish\r\n";
 // Pool::collect();

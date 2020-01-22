@@ -31,6 +31,7 @@ $processes = [];
 for ($i = 0; $i < 1; $i++) {
     $processCloned = clone $process;
     $pid = $processCloned->run();
+    var_dump($processCloned->getPid());
     echo "I am father, my pid is " . posix_getpid() . ", my children is $pid" . PHP_EOL;
     $processCloned->write("Hello my child!");
     $processCloned->write('u;uu');
@@ -38,7 +39,6 @@ for ($i = 0; $i < 1; $i++) {
 }
 
 foreach ($processes as $process) {
-//    sleep(1);
     $process->write('U;uu2');
 }
 

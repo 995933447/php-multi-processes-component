@@ -20,10 +20,21 @@ class Process
 
     protected $name;
 
+    protected $pid;
+
     public function __construct(callable $callback, bool $isDaemon = false)
     {
         $this->callback = $callback;
         $this->isDaemon = $isDaemon;
+    }
+
+    public function getPid(): ?int
+    {
+        if ($this->isMaster) {
+            return $this->pid;
+        } 
+
+        return $this->pid?: $this->pid = posix_getpid();
     }
 
     public function setName(string $name)
@@ -53,7 +64,7 @@ class Process
     public function setDefaultPipesIfNotSet()
     {
         if (!$this->masterWritablePipe || !$this->workerWritablePipe) {
-            $format = sys_get_temp_dir() . "/BOBBY_PROCESS_%s";
+            $format = sys_get_temp_dir() . "/BOBBY_PHP_PROCESS_%s";
             $this->setPipes(sprintf($format, uniqid()), sprintf($format, uniqid()));
         }
     }
@@ -101,6 +112,7 @@ class Process
     {
         if (($pid = pcntl_fork()) < 0) {
             throw new ProcessException("Fork child process fail.");
+            Quit::exceptionQuit();
         }
 
         if ($pid === 0) {
@@ -108,16 +120,18 @@ class Process
 
             if (posix_setsid() === -1) {
                 throw new ProcessException("Create session fail.");
+                Quit::exceptionQuit();
             };
 
             if (($daemonPid = pcntl_fork()) < 0) {
                 throw new ProcessException("Fork damon child process fail.");
+                Quit::exceptionQuit();
             }
 
             if ($daemonPid > 0) {
                 $this->write($daemonPid);
 
-                exit(0);
+                Quit::normalQuit();
             } else {
                 if ($this->name) {
                     $this->setName($this->name);
@@ -130,22 +144,24 @@ class Process
                 call_user_func_array($this->callback, array_merge([$this], func_get_args()));
 
                 $this->closePipes();
+                $this->clearPipes();
 
-                exit(0);
+                Quit::normalQuit();
             }
         }
 
-        return $this->read();
+        return $this->pid = $this->read();
     }
 
     protected function startAsNotDaemon()
     {
         if (($pid = pcntl_fork()) < 0) {
                 throw new ProcessException("Fork child process fail.");
+                exit(static::EXCEPTION_EXIT);
         }
 
         if ($pid > 0) {
-            return $pid;
+            return $this->pid = $pid;
         } else {
             $this->isMaster = false;
 
@@ -156,8 +172,9 @@ class Process
             call_user_func_array($this->callback, array_merge([$this], func_get_args()));
 
             $this->closePipes();
+            $this->clearPipes();
 
-            exit(0);
+            Quit::normalQuit();
         }
     }
 

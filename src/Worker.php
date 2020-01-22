@@ -27,24 +27,29 @@ class Worker extends Process
 
     protected function openInterProcessShareMemory()
     {
-        if (!$this->interProcessShareMemory) {
-           $this->interProcessShareMemory = new InterProcessShareMemory("PHP_WORKER_" . $this->getWorkerId());
+        if (!$this->interProcessShareMemory) { 
+           $this->interProcessShareMemory = new InterProcessShareMemory("BOBBY_PHP_WORKER_" . $this->getPid());
         }
         return $this->interProcessShareMemory;
     }
 
     public function isUsing(): bool
     {
-        return (bool)$this->openInterProcessShareMemory()->get(static::WORKER_USING_KEY);
+        return (bool)$this->openInterProcessShareMemory()->has(static::WORKER_USING_KEY);
     }
 
-    public function asUsing()
+    public function use()
     {
-        return $this->openInterProcessShareMemory()->set(static::WORKER_USING_KEY, true);
+        return $this->openInterProcessShareMemory()->set(static::WORKER_USING_KEY, 1);
     }
 
-    public function finish()
+    public function free()
     {
-        return $this->openInterProcessShareMemory()->set(static::WORKER_USING_KEY, false);
+        return $this->openInterProcessShareMemory()->delete(static::WORKER_USING_KEY);
+    }
+
+    public function __toString()
+    {
+        return $this->getWorkerId();
     }
 }

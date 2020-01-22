@@ -18,7 +18,13 @@ class InterProcessShareMemory
         $key = ftok($this->tempFile, $memoryTokenKey{0});
         if (!$this->memoryResource = shm_attach($key)) {
             throw new ProcessException("Create inter-process share memory fail.");
+            Quit::exceptionQuit();
         }
+    }
+
+    public function has(int $key): bool
+    {
+        return shm_has_var($this->memoryResource, $key);
     }
 
     public function set(int $key, $value)
@@ -38,8 +44,8 @@ class InterProcessShareMemory
 
     public function release()
     {
-        // unlink($this->tempFile);
-        // return shm_remove($this->memoryResource);
+        file_exists($this->tempFile) && unlink($this->tempFile);
+        shm_remove($this->memoryResource);
     }
 
     public function __destruct()
