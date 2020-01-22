@@ -65,7 +65,7 @@ class Process
     {
         if (!$this->masterWritablePipe || !$this->workerWritablePipe) {
             $format = sys_get_temp_dir() . "/BOBBY_PHP_PROCESS_%s";
-            $this->setPipes(sprintf($format, uniqid()), sprintf($format, uniqid()));
+            $this->setPipes(sprintf($format, $this->getPid() . '_' . uniqid()), sprintf($format, $this->getPid() .'_' . uniqid()));
         }
     }
 

@@ -37,10 +37,10 @@ for ($i = 0; $i < $workersNum; $i++) {
 $pool->broadcast("broadcasting.");
 sleep(10);
 
-while ($worker = $pool->getIdleWorker()) {
-    echo "poped:" . $worker->getWorkerId() . "\r\n";
-    $worker->write("\ ^ . ^ /");
-}
+// while ($worker = $pool->getIdleWorker()) {
+//     echo "poped:" . $worker->getWorkerId() . "\r\n";
+//     $worker->write("\ ^ . ^ /");
+// }
 
 echo "finish\r\n";
 // Pool::collect();
