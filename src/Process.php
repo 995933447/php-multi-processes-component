@@ -4,13 +4,15 @@
  */
 namespace Bobby\MultiProcesses;
 
+use Bobby\MultiProcesses\Ipcs\IpcContract;
+use Bobby\MultiProcesses\Ipcs\IpcDrivers\UnixSocket;
+use Bobby\MultiProcesses\Ipcs\IpcFactory;
+
 class Process
 {
-    protected $masterWritablePipe;
+    protected $ipc;
 
-    protected $workerWritablePipe;
-
-    protected $pipes;
+    protected $ipcType;
 
     protected $callback;
 
@@ -22,10 +24,11 @@ class Process
 
     protected $pid;
 
-    public function __construct(callable $callback, bool $isDaemon = false)
+    public function __construct(callable $callback, bool $isDaemon = false, int $ipcType = IpcFactory::UNIX_SOCKET_IPC)
     {
         $this->callback = $callback;
         $this->isDaemon = $isDaemon;
+        $this->ipcType = $ipcType;
     }
 
     public function getPid(): ?int
@@ -55,20 +58,6 @@ class Process
         return cli_get_process_title();
     }
 
-    public function setPipes(string $masterWritablePipe, string $workerWritablePipe)
-    {
-        $this->masterWritablePipe = $masterWritablePipe;
-        $this->workerWritablePipe = $workerWritablePipe;
-    }
-
-    public function setDefaultPipesIfNotSet()
-    {
-        if (!$this->masterWritablePipe || !$this->workerWritablePipe) {
-            $format = sys_get_temp_dir() . "/BOBBY_PHP_PROCESS_%s";
-            $this->setPipes(sprintf($format, $this->getPid() . '_' . uniqid()), sprintf($format, $this->getPid() .'_' . uniqid()));
-        }
-    }
-
     public function write($message)
     {
         $this->writeString(MessagePacker::serialize($message));
@@ -76,31 +65,37 @@ class Process
 
     public function writeString(string $message)
     {
-        $this->makePipes()->write($message);
+        $this->makeIpc()->write($message);
     }
 
-    public function read()
+    public function read(bool $block = true)
     {
-        return MessagePacker::unserialize($this->readString());
+        return MessagePacker::unserialize($this->readString($block));
     }
 
-    public function readString(): string
+    public function readString(bool $block = true): string
     {
-        return $this->makePipes()->read();
+        return $this->makeIpc()->read($block);
     }
 
-    protected function makePipes()
+    protected function initIpc(): IpcContract
     {
-        if (!$this->pipes) {
-            return $this->pipes = $this->isMaster? new Pipes($this->masterWritablePipe, $this->workerWritablePipe): new Pipes($this->workerWritablePipe, $this->masterWritablePipe);
+        if (!$this->ipc) {
+            $this->ipc = IpcFactory::make($this->ipcType, new MessagePacker(md5(__FILE__ . '~!@')));
         }
 
-        return $this->pipes;
+        return $this->ipc;
+    }
+
+    protected function makeIpc(): IpcContract
+    {
+        $this->ipc->bindPortWithProcess($this->isMaster);
+        return $this->ipc;
     }
 
     public function run()
     {
-        $this->setDefaultPipesIfNotSet();
+        $this->initIpc();
 
         if ($this->isDaemon)
             return $this->startAsDaemon();
@@ -143,8 +138,8 @@ class Process
 
                 call_user_func_array($this->callback, array_merge([$this], func_get_args()));
 
-                $this->closePipes();
-                $this->clearPipes();
+                $this->closeIpc();
+                $this->clearIpc();
 
                 Quit::normalQuit();
             }
@@ -171,21 +166,21 @@ class Process
 
             call_user_func_array($this->callback, array_merge([$this], func_get_args()));
 
-            $this->closePipes();
-            $this->clearPipes();
+            $this->closeIpc();
+            $this->clearIpc();
 
             Quit::normalQuit();
         }
     }
 
-    public function closePipes()
+    public function closeIpc()
     {
-        $this->pipes->closePipes();
+        $this->makeIpc()->close();
     }
 
-    public function clearPipes()
+    public function clearIpc()
     {
-        $this->pipes->clearPipes();
+        $this->makeIpc()->clear();
     }
 
     public static function onCollect(?callable $callback = null)

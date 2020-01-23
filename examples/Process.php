@@ -1,10 +1,11 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
 
+use Bobby\MultiProcesses\Ipcs\IpcFactory;
 use Bobby\MultiProcesses\Process;
 
 $process = new Process(function (Process $process) {
-    echo "Hello, Im children, My pid is " . posix_getpid() . PHP_EOL;
+    echo "Hello, Im children, My pid is " . $process->getPid() . PHP_EOL;
 
     $masterData = $process->read();
     echo "My master send data:$masterData to me." . PHP_EOL . PHP_EOL;
@@ -15,7 +16,7 @@ $process = new Process(function (Process $process) {
     $masterData = $process->read();
     echo "My master send data3:$masterData to me." . PHP_EOL;
 
-    $process->clearPipes();
+    $process->clearIpc();
     
     echo "exit " . posix_getpid() . PHP_EOL;
 }, true);
@@ -28,7 +29,7 @@ declare(ticks = 1);
 Process::onCollect();
 
 $processes = [];
-for ($i = 0; $i < 1; $i++) {
+for ($i = 0; $i < 4; $i++) {
     $processCloned = clone $process;
     $pid = $processCloned->run();
     var_dump($processCloned->getPid());
@@ -43,4 +44,3 @@ foreach ($processes as $process) {
 }
 
 // Process::collect();
-sleep(5);

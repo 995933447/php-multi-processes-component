@@ -36,7 +36,7 @@ class MessagePacker
             $ablePackMessage = mb_substr($this->unpackMessages, 0, ++$lastEofPos + ($eofLen = mb_strlen($messageEof)));
             $this->unpackMessages = mb_substr($this->unpackMessages, $lastEofPos + $eofLen);
             if (($messageNum = substr_count($ablePackMessage, $messageEof)) === 1) {
-                $this->packedMessages[] = mb_substr($ablePackMessage, 0, $lastEofPos);
+                $this->packedMessages[] = mb_substr($ablePackMessage, 0, $lastEofPos - 1);
             };
             $this->packedMessages += explode($messageEof, $ablePackMessage, $messageNum);
         }

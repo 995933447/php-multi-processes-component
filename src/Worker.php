@@ -5,14 +5,17 @@ class Worker extends Process
 {
     protected $workerId;
 
-    protected $interProcessShareMemory;
+    protected $pool;
 
-    const WORKER_USING_KEY = 1;
-
-    public function __construct(int $workerId, callable $callback, bool $isDaemon = false)
+    public function __construct(callable $callback, bool $isDaemon = false, int $workerId = 0)
     {
         $this->workerId = $workerId;
         parent::__construct($callback, $isDaemon);
+    }
+
+    public function setPool(Pool $pool)
+    {
+        $this->pool = $pool;
     }
 
     public function getWorkerId(): int
@@ -25,27 +28,19 @@ class Worker extends Process
         $this->workerId = $workerId;
     }
 
-    protected function openInterProcessShareMemory()
-    {
-        if (!$this->interProcessShareMemory) { 
-           $this->interProcessShareMemory = new InterProcessShareMemory("BOBBY_PHP_WORKER_" . $this->getPid());
-        }
-        return $this->interProcessShareMemory;
-    }
-
     public function isUsing(): bool
     {
-        return (bool)$this->openInterProcessShareMemory()->has(static::WORKER_USING_KEY);
+        return (bool)$this->pool->openInterProcessShareMemory()->has($this->getPid());
     }
 
     public function use()
     {
-        return $this->openInterProcessShareMemory()->set(static::WORKER_USING_KEY, 1);
+        return $this->pool->openInterProcessShareMemory()->set($this->getPid(), 1);
     }
 
     public function free()
     {
-        return $this->openInterProcessShareMemory()->delete(static::WORKER_USING_KEY);
+        return $this->pool->openInterProcessShareMemory()->delete($this->getPid());
     }
 
     public function __toString()

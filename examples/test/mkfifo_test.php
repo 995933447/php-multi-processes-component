@@ -17,6 +17,13 @@ if (!file_exists($fifoFile))
     if (!posix_mkfifo($fifoFile, 0666))
         die('make fifo fail.' . PHP_EOL);        
 
+// mkfifo只能用于进程间通信
+// $rfd = fopen($fifoFile, 'r');
+// $wfd = fopen($fifoFile, 'w');
+// fwrite($rfd, '%%%');
+// var_dump(fread($rfd, 1024));
+// die;
+
 if (($pid = pcntl_fork()) < 0) {
     die('fork fail.');
 }
@@ -57,8 +64,8 @@ if ($pid > 0) {
     echo "parent write finish." . PHP_EOL;
 } else if ($pid == 0) {
     $rfd = fopen($fifoFile, 'r');
-    sleep(1); // 保证写端可以已经写入
-    
+    sleep(10); // 保证写端可以已经写入
+    echo "start to read" . PHP_EOL;
     stream_set_blocking($rfd, false);
     $content = stream_get_contents($rfd);
     echo "child read:$content" . PHP_EOL;
@@ -67,7 +74,7 @@ if ($pid > 0) {
     echo "child exit." . PHP_EOL;
     exit(0);
 }
-
+die;
 sleep(5);
 echo "fork 2" . PHP_EOL;
 if (($pid = pcntl_fork()) < 0) {

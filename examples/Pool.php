@@ -4,7 +4,7 @@ require __DIR__ . '/../vendor/autoload.php';
 use Bobby\MultiProcesses\Worker;
 use Bobby\MultiProcesses\Pool;
 
-$worker = new Worker(0, function (Worker $worker) {
+$worker = new Worker(function (Worker $worker) {
     $workerId = $worker->getWorkerId();
 
     while ($masterData = $worker->read()) {
@@ -12,7 +12,6 @@ $worker = new Worker(0, function (Worker $worker) {
         echo "I am worker:$workerId,My master send data:$masterData to me." . PHP_EOL;
         sleep(2);
         $worker->free();
-        var_dump("worker id:$workerId using state:" . (int)$worker->isUsing());
     }
 
     echo "Work:$workerId exit($masterData)" . PHP_EOL;
@@ -30,17 +29,16 @@ $pool->run();
 $workersNum = $pool->getWorkersNum();
 for ($i = 0; $i < $workersNum; $i++) {
     $worker = $pool->getWorker();
-    echo $msg =  "Master sending to worker:" . $worker->getWorkerId(), PHP_EOL;
+    $msg =  "Master sending to worker:" . $worker->getWorkerId();
     $worker->write($msg);
 }
 
 $pool->broadcast("broadcasting.");
-sleep(10);
+sleep(5);
 
-// while ($worker = $pool->getIdleWorker()) {
-//     echo "poped:" . $worker->getWorkerId() . "\r\n";
-//     $worker->write("\ ^ . ^ /");
-// }
+while ($worker = $pool->getIdleWorker()) {
+    echo "poped:" . $worker->getWorkerId() . "\r\n";
+    $worker->write("\ ^ . ^ /");
+}
 
-echo "finish\r\n";
 // Pool::collect();
