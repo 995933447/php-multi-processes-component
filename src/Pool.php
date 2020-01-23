@@ -13,11 +13,17 @@ class Pool
 
     protected $runningWorkers;
 
-    public function __construct(int $maxWorkersNum, Worker $worker)
+    protected $interProcessShareMemory;
+
+    protected $poolId;
+
+    public function __construct(int $maxWorkersNum, Worker $worker, $poolId = __CLASS__)
     {
         $this->maxWorkersNum = $maxWorkersNum;
         $this->workerPrototype = $worker;
+        $this->workerPrototype->setPool($this);
         $this->runningWorkers = new \SplQueue();
+        $this->poolId = $poolId;
     }
 
     public function getWorkersNum(): int
@@ -115,5 +121,13 @@ class Pool
     public static function collect()
     {
         Worker::collect();
+    }
+
+    public function openInterProcessShareMemory()
+    {
+        if (!$this->interProcessShareMemory) { 
+           $this->interProcessShareMemory = new InterProcessShareMemory($this->poolId);
+        }
+        return $this->interProcessShareMemory;
     }
 }
