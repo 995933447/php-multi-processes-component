@@ -1,6 +1,6 @@
 {
     "name": "bobby/multi-processes",
-    "description": "php原生pcntl实现的简易进程池工具",
+    "description": "php原生pcntl实现的多进程和进程池组件",
     "authors": [
         {
             "name": "bobby",
