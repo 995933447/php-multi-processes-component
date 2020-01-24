@@ -29,12 +29,11 @@ Pool::onCollect();
 
 $pool->run();
 
-// $workersNum = $pool->getWorkersNum();
-// for ($i = 0; $i < $workersNum; $i++) {
-//     $worker = $pool->getWorker();
-//     $msg =  "Master sending to worker:" . $worker->getWorkerId();
-//     $worker->write($msg);
-// }
+$workersNum = $pool->getWorkersNum();
+for ($i = 0; $i < $workersNum; $i++) {
+    $msg =  "Master sending to worker:" . $worker->getWorkerId();
+    $pool->getWorker()->write($msg);
+}
 
 $pool->broadcast("broadcasting.");
 
