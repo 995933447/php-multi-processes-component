@@ -21,7 +21,7 @@ $worker = new Worker(function (Worker $worker) {
 $worker->setName('Pool worker');
 
 $pool = new Pool(4, $worker);
-// 设置启动时最少可用worker进程数量
+// 设置启动时最少可用worker进程数量。不设置的话则默认和进程池最大数量相同
 $pool->setMinIdleWorkerNum(2);
 
 declare(ticks = 1);
