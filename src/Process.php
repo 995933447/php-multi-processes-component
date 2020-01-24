@@ -10,7 +10,7 @@ use Bobby\MultiProcesses\Ipcs\IpcFactory;
 
 class Process
 {
-    protected $ipc;
+    public $ipc;
 
     protected $ipcType;
 
@@ -96,7 +96,7 @@ class Process
     public function run()
     {
         $this->initIpc();
-
+      
         if ($this->isDaemon)
             return $this->startAsDaemon();
 

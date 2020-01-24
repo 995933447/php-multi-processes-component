@@ -7,8 +7,6 @@ class Pool
 
     protected $minIdleWorkerNum;
 
-    protected $maxIdleWorkerNum;
-
     protected $workerPrototype;
 
     protected $runningWorkers;
@@ -46,16 +44,6 @@ class Pool
         return !is_null($this->minIdleWorkerNum)? $this->minIdleWorkerNum: $this->maxWorkersNum;
     }
 
-    public function setMaxIdleWorkerNum(int $num)
-    {
-        $this->maxIdleWorkerNum = $num;
-    }
-
-    public function getMaxIdleWorkerNum(): int
-    {
-        return !is_null($this->maxIdleWorkerNum)? $this->maxIdleWorkerNum: $this->maxWorkersNum;
-    }
-
     public function run()
     {
         for ($i = 0; $i < $this->getMinIdleWorkerNum(); $i++) {
@@ -72,6 +60,7 @@ class Pool
         $worker = clone $this->workerPrototype;
         $worker->setWorkId($workerId);
         $this->runningWorkers->enqueue($worker);
+        return $worker;
     }
 
     public function getWorker(): Worker
@@ -82,15 +71,14 @@ class Pool
 
     public function getIdleWorker($block = true): ?Worker
     {
-        foreach ($this->runningWorkers as $worker) {
-            if (!$worker->isUsing()) {
-                return $worker;
-            }
-        }
+        $runningWorkersNum = count($this->runningWorkers);
+        $n = 0;      
+        while(($worker = $this->getWorker()) && $worker->isUsing() && ++$n <= $runningWorkersNum);
+        if (!$worker->isUsing()) return $worker;
 
-        if (($runningWorkersNum = count($this->runningWorkers)) < $this->getMaxIdleWorkerNum()) {
-            $this->addWorker($this->workerPrototype->getWorkerId() + (--$runningWorkersNum));
-            $worker = $this->getWorker();
+        if ($runningWorkersNum < $this->getMaxWorkersNum()) {
+            $worker = $this->addWorker($this->workerPrototype->getWorkerId() + $runningWorkersNum);
+            $worker->run();
             return $worker;
         }
 

@@ -5,6 +5,7 @@ use Bobby\MultiProcesses\Ipcs\IpcDrivers\UnixSocket;
 use Bobby\MultiProcesses\MessagePacker;
 
 $ipc = new UnixSocket(new MessagePacker(md5(__FILE__ . '~!@')));
+$ipc2 = new UnixSocket(new MessagePacker(md5(__FILE__ . '~!@')));
 
 if (($pid = pcntl_fork()) > 0) {
     $ipc->usePort(0);
@@ -13,9 +14,9 @@ if (($pid = pcntl_fork()) > 0) {
     echo $ipc->read();
     $ipc->write("hello childrn" . PHP_EOL);
 } else {
-    $ipc->usePort(1);
-    echo $ipc->read();
-    $ipc->write("message from child" . PHP_EOL);
+    $ipc2->usePort(1);
+    echo $ipc2->read();
+    $ipc2->write("message from child" . PHP_EOL);
     echo "child write finish" . PHP_EOL;
-    echo $ipc->read();
+    echo $ipc2->read();
 }
