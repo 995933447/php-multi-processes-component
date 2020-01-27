@@ -50,7 +50,7 @@ foreach ($processes as $process) {
 
 // Process::collect();
 ```
-public \Bobby\MultiProcesses\Process::__construct(callable $callback, bool $isDaemon = false, int $ipcType = IpcFactory::UNIX_SOCKET_IPC)\
+public \Bobby\MultiProcesses\Process::__construct(callable $callback, bool $isDaemon = false, int $ipcType = \Bobby\MultiProcesses\Ipcs\IpcFactory::UNIX_SOCKET_IPC)\
 定义子进程\
 $callback 子进程启动时执行该方法\
 $isDaemon 子进程是否设置为守护进程,true代表设置为守护模式,false为否\
@@ -176,7 +176,7 @@ while (1) {
 \Bobby\MultiProcesses\Worker\
 该类继承自\Bobby\MultiProcesses\Process类.只是方法和\Bobby\MultiProcesses\Process基本一致.使用拓展了一些方法配合\Bobby\MultiProcesses\Pool类一起工作.\
 \
-public \Bobby\MultiProcesses\Worker::__construct(callable $callback, bool $isDaemon = false, int $ipcType = IpcFactory::UNIX_SOCKET_IPC, int $workerId = 0)\
+public \Bobby\MultiProcesses\Worker::__construct(callable $callback, bool $isDaemon = false, int $ipcType = \Bobby\MultiProcesses\Ipcs\IpcFactory::UNIX_SOCKET_IPC, int $workerId = 0)\
 定义子一个worker进程\
 $callback 子进程启动时执行该方法.\
 $isDaemon 子进程是否设置为守护进程,true代表设置为守护模式,false为否.\
@@ -198,7 +198,7 @@ public \Bobby\MultiProcesses\Worker::isUsing(): bool\
 \Bobby\MultiProcesses\Pool\
 进程池管理类.
 
-public \Bobby\MultiProcesses\Pool::__construct(int $maxWorkersNum, Worker $worker, $poolId = __ CLASS __)\
+public \Bobby\MultiProcesses\Pool::__construct(int $maxWorkersNum, \Bobby\MultiProcesses\Worker $worker, $poolId = __ CLASS __)\
 定义一个进程池.\
 $maxWorkersNum 进程池最大允许进程数量.\
 $worker  \Bobby\MultiProcesses\Worker对象.进程池将根据传入Worker对象的worker ID为起点,为创建的进程递增复制workerID.\
@@ -230,10 +230,10 @@ $pool = new Pool(5, $worker);
 public \Bobby\MultiProcesses\Pool::setMinIdleWorkersNum(int $num)\
 设置进程池实际运行时的worker进程数量.配合public \Bobby\MultiProcesses\Pool::getIdleWorker()使用.当所有worker都处于繁忙状态,进程池将动态fork出新的worker进程知道到达最大允许进程数量.如果调用该方法设置.则默认值为最大允许进程数量,由构造函数传入.
 
-\Bobby\MultiProcesses\Pool::getIdleWorker(): null|Worker\
+\Bobby\MultiProcesses\Pool::getIdleWorker(): null|\Bobby\MultiProcesses\Worker\
 获取空闲状态的进程对象.通常用于给进程池均衡负载地分发任务执行.
 
-\Bobby\MultiProcesses\Pool::getWorker(): Worker\
+\Bobby\MultiProcesses\Pool::getWorker(): \Bobby\MultiProcesses\Worker\
 轮询获取worker进程对象.和getIdleWorker方法不同的是该方法仅轮询获取进程池存在的worker进程对象,而不管worker对象是否为繁忙状态,也不会导致进程池动态fork进程.
 
 public \Bobby\MultiProcesses\Pool::getWorkersNum(): int\
