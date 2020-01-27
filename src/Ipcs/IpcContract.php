@@ -39,9 +39,9 @@ abstract class IpcContract
         }
 
         $readPort = $this->getReadPort();
-        $reads = $writes = $excepts = [];
+        $writes = $excepts = [];
         while (1) {
-            $reads[] = $readPort;
+            $reads = [$readPort];
             // stream_select系统调用被信号打断会产生warnning,这个是可预知的warning,不会导致处理不了消息
             if (@stream_select($reads, $writes, $excepts, null)) {
                 if ($content = stream_get_contents($readPort)) {
@@ -50,6 +50,8 @@ abstract class IpcContract
                         return $this->messagePacker->getMessageFromBuffer();
                     }
                 };
+                
+                unset($content);
 
                 if (!$block) {
                     return '';

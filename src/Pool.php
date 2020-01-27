@@ -69,7 +69,7 @@ class Pool
         return $worker;
     }
 
-    public function getIdleWorker($block = true): ?Worker
+    public function getIdleWorker(): ?Worker
     {
         $runningWorkersNum = count($this->runningWorkers);
         $n = 0;      
@@ -80,10 +80,6 @@ class Pool
             $worker = $this->addWorker($this->workerPrototype->getWorkerId() + $runningWorkersNum);
             $worker->run();
             return $worker;
-        }
-
-        if ($block) {
-            return $this->getIdleWorker();
         }
 
         return null;
@@ -101,9 +97,21 @@ class Pool
         }
     }
 
-    public static function onCollect()
+    public function onCollect(callable $callback = null)
     {
-        Worker::onCollect();
+        pcntl_signal(SIGCHLD, $callback?: function ($signo) {
+            while (1) {
+                if ($pid = pcntl_wait($status, WNOHANG) <= 0) {
+                    break;
+                } else {
+                    foreach ($this->runningWorkers as $index => $worker) {
+                        if ($worker->getPid() == $pid) {
+                            unset($this->runningWorkers[$index]);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     public static function collect()
@@ -114,7 +122,7 @@ class Pool
     public function openInterProcessShareMemory()
     {
         if (!$this->interProcessShareMemory) { 
-           $this->interProcessShareMemory = new InterProcessShareMemory($this->poolId);
+           $this->interProcessShareMemory = new InterProcessShareMemory($this->poolId, false);
         }
         return $this->interProcessShareMemory;
     }

@@ -20,6 +20,8 @@ class InterProcessShareMemory
             throw new ProcessException("Create inter-process share memory fail.");
             Quit::exceptionQuit();
         }
+
+        file_exists($this->tempFile) && unlink($this->tempFile);
     }
 
     public function has(int $key): bool
@@ -44,7 +46,6 @@ class InterProcessShareMemory
 
     public function release()
     {
-        file_exists($this->tempFile) && unlink($this->tempFile);
         shm_remove($this->memoryResource);
     }
 
