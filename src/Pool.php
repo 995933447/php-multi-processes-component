@@ -97,12 +97,12 @@ class Pool
         }
     }
 
-    public function onCollect(callable $callback = null, bool $autoCollectChild = true)
+    public function onCollect($callback = null, bool $autoCollectChild = true)
     {
-        if ($callback == SIG_IGN || $callback == SIG_DFL) {
+        if (in_array($callback, [SIG_IGN, SIG_DFL], true)) {
             pcntl_signal(SIGCHLD, $callback);
         } else {
-            pcntl_signal(SIGCHLD, function ($signo) {
+            pcntl_signal(SIGCHLD, function ($signo) use ($callback, $autoCollectChild) {
                 if (!is_null($callback)) {
                     $callback($signo);
                 }
