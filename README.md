@@ -174,7 +174,7 @@ while (1) {
 ```
 
 \Bobby\MultiProcesses\Worker\
-该类继承自\Bobby\MultiProcesses\Process类.使用方法和\Bobby\MultiProcesses\Process基本一致.使用拓展了一些方法配合\Bobby\MultiProcesses\Pool类一起工作.\
+该类继承自\Bobby\MultiProcesses\Process类.只是方法和\Bobby\MultiProcesses\Process基本一致.使用拓展了一些方法配合\Bobby\MultiProcesses\Pool类一起工作.\
 \
 public \Bobby\MultiProcesses\Worker::__construct(callable $callback, bool $isDaemon = false, int $ipcType = IpcFactory::UNIX_SOCKET_IPC, int $workerId = 0)\
 定义子一个worker进程\
