@@ -120,6 +120,7 @@ class Pool
                             
                             if ($this->runningWorkers->isEmpty()) {
                                 $this->closeInterProcessShareMemory();
+                                break;
                             }
                         }
                     }
