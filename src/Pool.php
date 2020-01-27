@@ -110,16 +110,16 @@ class Pool
                 while ($autoCollectChild) {
                     if ($pid = pcntl_wait($status, WNOHANG) <= 0) {
                         break;
-                    } else {
-                        foreach ($this->runningWorkers as $index => $worker) {
-                            if ($worker->getPid() == $pid) {
-                                $worker->free();
+                    }
 
-                                unset($this->runningWorkers[$index]);
-                                
-                                if ($this->runningWorkers->isEmpty()) {
-                                    $this->closeInterProcessShareMemory();
-                                }
+                    foreach ($this->runningWorkers as $index => $worker) {
+                        if ($worker->getPid() == $pid) {
+                            $worker->free();
+
+                            unset($this->runningWorkers[$index]);
+                            
+                            if ($this->runningWorkers->isEmpty()) {
+                                $this->closeInterProcessShareMemory();
                             }
                         }
                     }
