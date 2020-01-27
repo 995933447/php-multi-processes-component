@@ -1,6 +1,10 @@
 <?php
 namespace Bobby\MultiProcesses;
 
+/** 进程间共享内存封装管理类
+ * Class InterProcessShareMemory
+ * @package Bobby\MultiProcesses
+ */
 class InterProcessShareMemory
 {
     protected $tempFile;

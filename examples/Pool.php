@@ -56,7 +56,7 @@ while (1) {
     $worker->write("\ ^ . ^ /");
     sleep(1);
     $n++;
-    var_dump($runningWorkersNum = $pool->getWorkersNum());
+    echo "Workers num:" . ($runningWorkersNum = $pool->getWorkersNum()) . PHP_EOL;
     if ($n >= 100 * $runningWorkersNum) {
         var_dump($n);
         break;

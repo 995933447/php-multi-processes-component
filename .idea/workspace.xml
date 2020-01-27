@@ -4,7 +4,13 @@
     <list default="true" id="0a68eee3-cafc-4fb4-abca-5421fc785e16" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/Pool.php" beforeDir="false" afterPath="$PROJECT_DIR$/examples/Pool.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/Process.php" beforeDir="false" afterPath="$PROJECT_DIR$/examples/Process.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/InterProcessShareMemory.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/InterProcessShareMemory.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/MessagePacker.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/MessagePacker.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Pool.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Pool.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Process.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Process.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Quit.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Quit.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Worker.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Worker.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -81,6 +87,7 @@
       <workItem from="1579229088511" duration="148000" />
       <workItem from="1579230991739" duration="25124000" />
       <workItem from="1579757966945" duration="6787000" />
+      <workItem from="1580110109935" duration="2331000" />
     </task>
     <servers />
   </component>

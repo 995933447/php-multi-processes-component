@@ -5,7 +5,7 @@ use Bobby\MultiProcesses\Ipcs\IpcFactory;
 use Bobby\MultiProcesses\Process;
 
 $process = new Process(function (Process $process) {
-    echo "Hello, Im children, My pid is " . $process->getPid() . PHP_EOL;
+    echo "Hello, Im children, My pid is " . $process->getPid() . PHP_EOL . PHP_EOL;
 
     $masterData = $process->read();
     echo "My master send data:$masterData to me." . PHP_EOL . PHP_EOL;
@@ -14,12 +14,12 @@ $process = new Process(function (Process $process) {
     echo "My master send data2:$masterData to me." . PHP_EOL . PHP_EOL;
 
     $masterData = $process->read();
-    echo "My master send data3:$masterData to me." . PHP_EOL;
+    echo "My master send data3:$masterData to me." . PHP_EOL . PHP_EOL;
 
     $process->clearIpc();
     
     echo "exit " . posix_getpid() . PHP_EOL;
-}, true);
+}, true, IpcFactory::PIPES_IPC);
 
 $process->setName("child php process.");
 
@@ -32,15 +32,14 @@ $processes = [];
 for ($i = 0; $i < 4; $i++) {
     $processCloned = clone $process;
     $pid = $processCloned->run();
-    var_dump($processCloned->getPid());
-    echo "I am father, my pid is " . posix_getpid() . ", my children is $pid" . PHP_EOL;
+    echo "I am father, my pid is " . posix_getpid() . ", my children is $pid" . PHP_EOL . PHP_EOL;
     $processCloned->write("Hello my child!");
-    $processCloned->write('u;uu');
+    $processCloned->write('Hello my child 2!');
     $processes[] = $processCloned;
 }
 
 foreach ($processes as $process) {
-    $process->write('U;uu2');
+    $process->write('Hello my child 3!');
 }
 
 // Process::collect();
