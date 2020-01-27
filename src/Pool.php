@@ -5,7 +5,7 @@ class Pool
 {
     protected $maxWorkersNum;
 
-    protected $minIdleWorkerNum;
+    protected $minIdleWorkersNum;
 
     protected $workerPrototype;
 
@@ -34,19 +34,19 @@ class Pool
         return $this->maxWorkersNum;
     }
 
-    public function setMinIdleWorkerNum(int $num)
+    public function setMinIdleWorkersNum(int $num)
     {
-        $this->minIdleWorkerNum = $num;
+        $this->minIdleWorkersNum = $num;
     }
 
-    public function getMinIdleWorkerNum(): int
+    public function getMinIdleWorkersNum(): int
     {
-        return !is_null($this->minIdleWorkerNum)? $this->minIdleWorkerNum: $this->maxWorkersNum;
+        return !is_null($this->minIdleWorkersNum)? $this->minIdleWorkersNum: $this->maxWorkersNum;
     }
 
     public function run()
     {
-        for ($i = 0; $i < $this->getMinIdleWorkerNum(); $i++) {
+        for ($i = 0; $i < $this->getMinIdleWorkersNum(); $i++) {
             $this->addWorker($i + $this->workerPrototype->getWorkerId());
         }
 
@@ -97,21 +97,37 @@ class Pool
         }
     }
 
-    public function onCollect(callable $callback = null)
+    public function onCollect(callable $callback = null, bool $autoCollectChild = true)
     {
-        pcntl_signal(SIGCHLD, $callback?: function ($signo) {
-            while (1) {
-                if ($pid = pcntl_wait($status, WNOHANG) <= 0) {
-                    break;
-                } else {
-                    foreach ($this->runningWorkers as $index => $worker) {
-                        if ($worker->getPid() == $pid) {
-                            unset($this->runningWorkers[$index]);
+        if ($callback == SIG_IGN || $callback == SIG_DFL) {
+            pcntl_signal(SIGCHLD, $callback);
+        } else {
+            pcntl_signal(SIGCHLD, function ($signo) {
+                if (!is_null($callback)) {
+                    $callback($signo);
+                }
+
+                if ($autoCollectChild) {
+                    while (1) {
+                        if ($pid = pcntl_wait($status, WNOHANG) <= 0) {
+                            break;
+                        } else {
+                            foreach ($this->runningWorkers as $index => $worker) {
+                                if ($worker->getPid() == $pid) {
+                                    $worker->free();
+
+                                    unset($this->runningWorkers[$index]);
+                                    
+                                    if ($this->runningWorkers->isEmpty()) {
+                                        $this->closeInterProcessShareMemory();
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     public static function collect()
@@ -125,5 +141,10 @@ class Pool
            $this->interProcessShareMemory = new InterProcessShareMemory($this->poolId, false);
         }
         return $this->interProcessShareMemory;
+    }
+
+    public function closeInterProcessShareMemory()
+    {
+        if ($this->interProcessShareMemory instanceof InterProcessShareMemory) $this->interProcessShareMemory->release();
     }
 }

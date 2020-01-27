@@ -18,6 +18,15 @@ class Worker extends Process
         $this->pool = $pool;
     }
 
+    public function getPool(): Pool
+    {
+        if (is_null($this->pool)) {
+            throw new ProcessException("Property pool dose not set.");
+        }
+
+        return $this->pool;
+    }
+
     public function getWorkerId(): int
     {
         return $this->workerId;
@@ -30,17 +39,17 @@ class Worker extends Process
 
     public function isUsing(): bool
     {
-        return (bool)$this->pool->openInterProcessShareMemory()->has($this->getPid());
+        return (bool)$this->getPool()->openInterProcessShareMemory()->has($this->getPid());
     }
 
     public function use()
     {
-        return $this->pool->openInterProcessShareMemory()->set($this->getPid(), 1);
+        return $this->getPool()->openInterProcessShareMemory()->set($this->getPid(), 1);
     }
 
     public function free()
     {
-        return $this->pool->openInterProcessShareMemory()->delete($this->getPid());
+        return $this->getPool()->openInterProcessShareMemory()->delete($this->getPid());
     }
 
     public function __toString()
