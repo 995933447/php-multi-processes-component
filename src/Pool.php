@@ -107,20 +107,18 @@ class Pool
                     $callback($signo);
                 }
 
-                if ($autoCollectChild) {
-                    while (1) {
-                        if ($pid = pcntl_wait($status, WNOHANG) <= 0) {
-                            break;
-                        } else {
-                            foreach ($this->runningWorkers as $index => $worker) {
-                                if ($worker->getPid() == $pid) {
-                                    $worker->free();
+                while ($autoCollectChild) {
+                    if ($pid = pcntl_wait($status, WNOHANG) <= 0) {
+                        break;
+                    } else {
+                        foreach ($this->runningWorkers as $index => $worker) {
+                            if ($worker->getPid() == $pid) {
+                                $worker->free();
 
-                                    unset($this->runningWorkers[$index]);
-                                    
-                                    if ($this->runningWorkers->isEmpty()) {
-                                        $this->closeInterProcessShareMemory();
-                                    }
+                                unset($this->runningWorkers[$index]);
+                                
+                                if ($this->runningWorkers->isEmpty()) {
+                                    $this->closeInterProcessShareMemory();
                                 }
                             }
                         }
