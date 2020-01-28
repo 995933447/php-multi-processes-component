@@ -1,6 +1,6 @@
 {
     "name": "bobby/multi-processes",
-    "description": "php原生pcntl实现的简易多进程和进程池组件,提供进程间通信传输数据功能.",
+    "description": "php原生pcntl实现的简易多进程和进程池组件,提供进程间通信传输数据功能.包含进程池按需动态fork进程功能.",
     "authors": [
         {
             "name": "bobby",
