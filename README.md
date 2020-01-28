@@ -225,7 +225,7 @@ $worker = new Worker(function (Worker $worker) {
 }, true);
 $worker->setName('Pool worker');
 
-//最大允许产生5个进程,5个进程的worker ID分别是0,1,2,3,4.
+// 设置最大允许产生5个进程,5个进程的worker ID分别是0,1,2,3,4.
 $pool = new Pool(5, $worker);
 ```
 public \Bobby\MultiProcesses\Pool::setMinIdleWorkersNum(int $num)\
