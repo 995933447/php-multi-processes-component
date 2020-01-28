@@ -52,6 +52,7 @@ while (1) {
     if (!$worker = $pool->getIdleWorker()) {
         continue;
     }
+
     echo "poped:" . $worker->getWorkerId() . PHP_EOL;
     $worker->write("\ ^ . ^ /");
     sleep(1);
