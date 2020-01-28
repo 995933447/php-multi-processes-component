@@ -10,7 +10,7 @@ use Bobby\MultiProcesses\Ipcs\IpcFactory;
 use Bobby\MultiProcesses\Process;
 
 $process = new Process(function (Process $process) {
-    echo "Hello, Im children, My pid is " . $process->getPid() . PHP_EOL . PHP_EOL;
+    echo "Hello, Im children, My pid is " . ($pid = $process->getPid()) . PHP_EOL . PHP_EOL;
 
     $masterData = $process->read();
     echo "My master send data:$masterData to me." . PHP_EOL . PHP_EOL;
@@ -23,8 +23,8 @@ $process = new Process(function (Process $process) {
 
     $process->clearIpc();
     
-    echo "exit " . posix_getpid() . PHP_EOL;
-}, true, IpcFactory::PIPES_IPC);
+    echo "exit $pid" . PHP_EOL;
+}, true, IpcFactory::UNIX_SOCKET_IPC);
 
 $process->setName("child php process.");
 
@@ -225,7 +225,7 @@ $worker = new Worker(function (Worker $worker) {
 }, true);
 $worker->setName('Pool worker');
 
-//最大允许产生5个进程,5个进程的worker ID分别是0,1,2,3,4.
+// 设置最大允许产生5个进程,5个进程的worker ID分别是0,1,2,3,4.
 $pool = new Pool(5, $worker);
 ```
 public \Bobby\MultiProcesses\Pool::setMinIdleWorkersNum(int $num)\
