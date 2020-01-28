@@ -24,7 +24,7 @@ $process = new Process(function (Process $process) {
     $process->clearIpc();
     
     echo "exit " . posix_getpid() . PHP_EOL;
-}, true, IpcFactory::PIPES_IPC);
+}, true, IpcFactory::UNIX_SOCKET_IPC);
 
 $process->setName("child php process.");
 
