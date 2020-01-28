@@ -10,7 +10,7 @@ use Bobby\MultiProcesses\Ipcs\IpcFactory;
 use Bobby\MultiProcesses\Process;
 
 $process = new Process(function (Process $process) {
-    echo "Hello, Im children, My pid is " . $process->getPid() . PHP_EOL . PHP_EOL;
+    echo "Hello, Im children, My pid is " . ($pid = $process->getPid()) . PHP_EOL . PHP_EOL;
 
     $masterData = $process->read();
     echo "My master send data:$masterData to me." . PHP_EOL . PHP_EOL;
@@ -23,7 +23,7 @@ $process = new Process(function (Process $process) {
 
     $process->clearIpc();
     
-    echo "exit " . $process->getPid() . PHP_EOL;
+    echo "exit $pid" . PHP_EOL;
 }, true, IpcFactory::UNIX_SOCKET_IPC);
 
 $process->setName("child php process.");
