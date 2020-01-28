@@ -245,17 +245,13 @@ class Process
      */
     public static function onCollect($callback = null)
     {
-        if (in_array($callback, [SIG_IGN, SIG_DFL], true)) {
-            pcntl_signal(SIGCHLD, $callback);
-        } else {
-            pcntl_signal(SIGCHLD, $callback?: function ($signo) {
-                while (1) {
-                    if (pcntl_wait($status, WNOHANG) <= 0) {
-                        break;
-                    }
+        pcntl_signal(SIGCHLD, !is_null($callback)? $callback: function ($signo) {
+            while (1) {
+                if (pcntl_wait($status, WNOHANG) <= 0) {
+                    break;
                 }
-            });
-        }
+            }
+        });
     }
 
     /**
