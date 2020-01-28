@@ -93,8 +93,8 @@ public \Bobby\MultiProcesses\Process::clearIpc()\
 释放父子进程双方通信通道资源.
 
 public static \Bobby\MultiProcesses\Process::onCollect($callback = null)\
-安装子进程退出时异步回调的信号处理器，当子进程退出时将触发该信号处理器\
-$callback 为NULL时组件将自动回收子进程资源避免成为僵尸进程.尾用自定义回调函数时,子进程退出时将触发自定义回调函数.你也可以使用php的pcntl_signal.该方法就是基于pcntl_signal封装实现的.
+安装子进程退出时异步回调的信号处理器,当子进程退出时将触发该信号处理器\
+$callback 为NULL时组件将自动回收子进程资源避免成为僵尸进程.如为自定义回调函数时,子进程退出时将触发自定义回调函数,你需要编写逻辑手动回收进程资源.你也可以使用php的pcntl_signal.该方法就是基于pcntl_signal封装实现的.
 注意:使用该方法后一定要在父进程declare(ticks = 1)或者在脚本尾部使用\Bobby\MultiProcesses\Process::collect进行监信号,否则子进程不会触发。
 
 public static \Bobby\MultiProcesses\Process::collect()
@@ -255,11 +255,10 @@ $message 任意数据类型.该方法将自动序列化$message.worker进程需�
 public \Bobby\MultiProcesses\Pool::broadcastString($message)\
 往进程池的所有进程广播消息(仅允许字符串类型).效率比broadcast高,因为该方法不会对消息进行序列化.worker进程需要用readString方法接收消息.
 
-public \Bobby\MultiProcesses\Pool::onCollect($callback = null, bool $autoCollectChild = true)\
-注册子进程信号处理器
-$callback 自定义信号处理回调函数, null代表使用默认的当前注册信号处理器(自动回收子进程并释放资源)
-执行自定义的$callback后是否自动回收子进程并释放资源
-注意:使用该方法后一定要在父进程declare(ticks = 1)或者在脚本尾部使用\Bobby\MultiProcesses\Process::collect进行监信号,否则子进程不会触发。
+public \Bobby\MultiProcesses\Pool::onCollect($callback = null)\
+注册子进程信号处理器\
+$callback 回收子进程前触发的回调函数.回调里请不要写子进程回收逻辑,该方法执行完$callback后将自动回收子进程资源并释放相应进程池内于进程相关的资源,和\Bobby\MultiProcesses\Process::onCollect方法不同.\
+注意:使用该方法后一定要在父进程declare(ticks = 1)或者在脚本尾部使用\Bobby\MultiProcesses\Process::collect进行监信号,否则子进程不会触发.
 
 public static \Bobby\MultiProcesses\Pool::collect()
 阻塞监听子进程信号,该方法会一直导致脚本阻塞,需要手动中断脚本退出

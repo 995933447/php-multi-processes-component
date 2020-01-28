@@ -19,13 +19,17 @@ class Pool
 
     protected $poolId;
 
-    public function __construct(int $maxWorkersNum, Worker $worker, $poolId = __CLASS__)
+    public function __construct(int $maxWorkersNum, Worker $worker, $poolId = null)
     {
         $this->maxWorkersNum = $maxWorkersNum;
         $this->workerPrototype = $worker;
         $this->workerPrototype->setPool($this);
         $this->runningWorkers = new \SplQueue();
-        $this->poolId = $poolId;
+        if (is_null($this->poolId)) {
+            $this->poolId = uniqid();
+        } else {
+            $this->poolId = $poolId;
+        }
     }
 
     /** 获取进程池当前进程数量
@@ -133,25 +137,20 @@ class Pool
         }
     }
 
-    /** 注册子进程信号处理器
-     * @param null $callback 自定义信号处理回调函数, null代表使用默认的当前注册信号处理器(自动回收子进程并释放资源)
-     * @param bool $autoCollectChild 执行$callback后是否自动回收子进程并释放资源
+    /** 监听收到子进程退出信号时回收子进程
+     * @param null $callback 回收子进程前触发的回调函数.回调里请不要写子进程回收逻辑,该方法执行完$callback后将自动回收子进程资源并释放相应进程池内于进程相关的资源
      */
-    public function onCollect($callback = null, bool $autoCollectChild = true)
+    public function onCollect($callback = null)
     {
         if (in_array($callback, [SIG_IGN, SIG_DFL], true)) {
             pcntl_signal(SIGCHLD, $callback);
         } else {
-            pcntl_signal(SIGCHLD, function ($signo) use ($callback, $autoCollectChild) {
-                if (!is_null($callback)) {
+            pcntl_signal(SIGCHLD, function ($signo) use ($callback) {
+                if (!is_null($callback) && is_callable($callback)) {
                     $callback($signo);
                 }
 
-                while (is_null($callback) || $autoCollectChild) {
-                    if ($pid = pcntl_wait($status, WNOHANG) <= 0) {
-                        break;
-                    }
-
+                while (($pid = pcntl_wait($status, WNOHANG)) > 0) {
                     foreach ($this->runningWorkers as $index => $worker) {
                         if ($worker->getPid() == $pid) {
                             $worker->free();

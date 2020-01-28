@@ -7,6 +7,7 @@
             "email": "995933447@qq.com"
         }
     ],
+    "license": "MIT",
     "require": {},
     "autoload": {
         "psr-4": {
