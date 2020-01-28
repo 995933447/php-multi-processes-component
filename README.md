@@ -147,6 +147,7 @@ for ($i = 0; $i < $workersNum; $i++) {
 
 $pool->broadcast("broadcasting.");
 
+// 这里和功能示例无关,只是为了说明在多进程中使用sleep会碰到的意外情况.
 // sleep函数会被进程信号中断
 // 此函数使调用进程被挂起，直到满足以下条件之一：
 // 1)已经过了seconds所指定的墙上时钟时间
