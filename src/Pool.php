@@ -82,7 +82,7 @@ class Pool
      * @param int $workerId
      * @return Worker
      */
-    protected function addWorker(int $workerId)
+    public function addWorker(int $workerId)
     {
         $worker = clone $this->workerPrototype;
         $worker->setWorkId($workerId);

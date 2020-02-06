@@ -20,6 +20,8 @@ class Pipes extends IpcContract
 
     protected $masterWritablePipe;
 
+    protected $workerWritablePipe;
+
     protected $hasBoundPortWithProcess;
 
     public function __construct(MessagePacker $messagePacker)
