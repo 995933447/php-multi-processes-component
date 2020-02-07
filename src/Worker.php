@@ -113,4 +113,9 @@ class Worker extends Process
     {
         return $this->getWorkerId();
     }
+
+    public function __destruct()
+    {
+        file_exists($this->tempFile) && unlink($this->tempFile);
+    }
 }

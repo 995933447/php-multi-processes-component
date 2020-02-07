@@ -55,7 +55,7 @@ while (1) {
 
     echo "poped:" . $worker->getWorkerId() . PHP_EOL;
     $worker->write("\ ^ . ^ /");
-    sleep(1);
+//    sleep(1);
     $n++;
     $runningWorkersNum = $pool->getWorkersNum();
     if ($n >= 100 * $runningWorkersNum) {
@@ -64,4 +64,4 @@ while (1) {
     }
 }
 
-Pool::collect();
+//Pool::collect();
