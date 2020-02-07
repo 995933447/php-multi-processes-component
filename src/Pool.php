@@ -107,8 +107,8 @@ class Pool
     {
         $runningWorkersNum = count($this->runningWorkers);
         $n = 0;      
-        while(($worker = $this->getWorker()) && $worker->isUsing() && ++$n <= $runningWorkersNum);
-        if (!$worker->isUsing()) return $worker;
+        while(($worker = $this->getWorker()) && $worker->isLock() && ++$n <= $runningWorkersNum);
+        if (!$worker->isLock()) return $worker;
 
         if ($runningWorkersNum < $this->getMaxWorkersNum()) {
             $worker = $this->addWorker($this->workerPrototype->getWorkerId() + $runningWorkersNum);

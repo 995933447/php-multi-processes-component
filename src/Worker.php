@@ -13,6 +13,10 @@ class Worker extends Process
 
     protected $pool;
 
+    protected $lockFile;
+
+    protected $tempFile;
+
     /**
      * Worker constructor.
      * @param callable $callback 子进程启动执行该方法
@@ -23,6 +27,7 @@ class Worker extends Process
     public function __construct(callable $callback, bool $isDaemon = false, int $ipcType = IpcFactory::UNIX_SOCKET_IPC, int $workerId = 0)
     {
         $this->workerId = $workerId;
+        $this->tempFile = stream_get_meta_data(tmpfile())['uri'];
         parent::__construct($callback, $isDaemon, $ipcType);
     }
 
@@ -63,22 +68,36 @@ class Worker extends Process
         $this->workerId = $workerId;
     }
 
+    /** 获得加锁文件
+     * @return bool|resource
+     */
+    protected function getLockFile()
+    {
+        if (!$this->lockFile) {
+            $this->lockFile = fopen($this->tempFile, 'w');
+        }
+        return $this->lockFile;
+    }
+
     /** 判断当前Worker对象是否正在执行任务
      * @return bool
      * @throws ProcessException
      */
-    public function isUsing(): bool
+    public function isLock(): bool
     {
-        return (bool)$this->getPool()->openInterProcessShareMemory()->has($this->getPid());
+        if ($isFree = flock($this->getLockFile(), LOCK_EX|LOCK_NB)) {
+            flock($this->getLockFile(), LOCK_UN);
+        }
+        return !$isFree;
     }
 
     /** 设置当前Worker对象是正在执行任务状态
      * @return bool
      * @throws ProcessException
      */
-    public function use()
+    public function lock()
     {
-        return $this->getPool()->openInterProcessShareMemory()->set($this->getPid(), 1);
+        @flock($this->getLockFile(), LOCK_EX);
     }
 
     /** 设置当前Worker对无任务执行状态
@@ -87,7 +106,7 @@ class Worker extends Process
      */
     public function free()
     {
-        return $this->getPool()->openInterProcessShareMemory()->delete($this->getPid());
+        @flock($this->lockFile, LOCK_UN);
     }
 
     public function __toString()

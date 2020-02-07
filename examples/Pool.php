@@ -10,7 +10,7 @@ $worker = new Worker(function (Worker $worker) {
 
     while ($masterData = $worker->read()) {
         // 将当前进程设置为任务进行中状态
-        $worker->use();
+        $worker->lock();
         $requestTime++;
         echo "I am worker:$workerId,My master send data:$masterData to me." . PHP_EOL;
         sleep(2);
@@ -57,7 +57,7 @@ while (1) {
     $worker->write("\ ^ . ^ /");
     sleep(1);
     $n++;
-    echo "Workers num:" . ($runningWorkersNum = $pool->getWorkersNum()) . PHP_EOL;
+    $runningWorkersNum = $pool->getWorkersNum();
     if ($n >= 100 * $runningWorkersNum) {
         var_dump($n);
         break;

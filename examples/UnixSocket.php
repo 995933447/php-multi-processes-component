@@ -1,22 +1,31 @@
 <?php
-require __DIR__ . '/../vendor/autoload.php';
 
-use Bobby\MultiProcesses\Ipcs\IpcDrivers\UnixSocket;
-use Bobby\MultiProcesses\MessagePacker;
+$sockets = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
 
-$ipc = new UnixSocket(new MessagePacker(md5(__FILE__ . '~!@')));
-$ipc2 = new UnixSocket(new MessagePacker(md5(__FILE__ . '~!@')));
+for ($i = 0; $i < 2; $i++) {
+    $pid     = pcntl_fork();
 
-if (($pid = pcntl_fork()) > 0) {
-    $ipc->usePort(0);
-    $ipc->write("child PID: $pid" . PHP_EOL);
-    echo "read write finish";
-    echo $ipc->read();
-    $ipc->write("hello childrn" . PHP_EOL);
-} else {
-    $ipc2->usePort(1);
-    echo $ipc2->read();
-    $ipc2->write("message from child" . PHP_EOL);
-    echo "child write finish" . PHP_EOL;
-    echo $ipc2->read();
+    if ($pid == -1) {
+        die('could not fork');
+
+    } else if ($pid) {
+        /* parent */
+        // fclose($sockets[0]);
+
+        fwrite($sockets[1], "child PID: $pid\n");
+        echo fgets($sockets[1]);
+//        echo fgets($sockets[1]);
+
+//        fclose($sockets[1]);
+
+    } else {
+        /* child */
+        // fclose($sockets[1]);
+
+        fwrite($sockets[0], "message from child\n");
+        echo fgets($sockets[0]);
+
+        fclose($sockets[0]);
+        exit;
+    }
 }
