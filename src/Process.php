@@ -26,11 +26,11 @@ class Process
 
     /**
      * Process constructor.
-     * @param callable $callback 子进程启动执行该方法
+     * @param mixed $callback 子进程启动执行该回调
      * @param bool $isDaemon 子进程是否设置为守护进程
      * @param int $ipcType 进程间通信方式,IpcFactory::UNIX_SOCKET_IPC为unix socket方式,默认方式.IpcFactory::PIPES_IPC为有名管道方式
      */
-    public function __construct(callable $callback, bool $isDaemon = false, int $ipcType = IpcFactory::UNIX_SOCKET_IPC)
+    public function __construct($callback, bool $isDaemon = false, int $ipcType = IpcFactory::UNIX_SOCKET_IPC)
     {
         $this->callback = $callback;
         $this->isDaemon = $isDaemon;
@@ -172,8 +172,6 @@ class Process
 
             if ($daemonPid > 0) {
                 $this->write($daemonPid);
-
-                Quit::normalQuit();
             } else {
                 if ($this->name) {
                     $this->setName($this->name);
@@ -187,9 +185,9 @@ class Process
 
                 $this->closeIpc();
                 $this->clearIpc();
-
-                Quit::normalQuit();
             }
+
+            Quit::normalQuit();
         }
 
         return $this->pid = $this->read();

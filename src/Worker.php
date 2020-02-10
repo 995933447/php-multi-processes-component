@@ -19,12 +19,12 @@ class Worker extends Process
 
     /**
      * Worker constructor.
-     * @param callable $callback 子进程启动执行该方法
+     * @param mixed $callback 子进程启动执行该回调
      * @param bool $isDaemon 子进程是否设置为守护进程
      * @param int $ipcType 进程间通信方式,IpcFactory::UNIX_SOCKET_IPC为unix socket方式,默认方式.IpcFactory::PIPES_IPC为有名管道方式
      * @param int $workerId 当前工作进程标识,不同于pid
      */
-    public function __construct(callable $callback, bool $isDaemon = false, int $ipcType = IpcFactory::UNIX_SOCKET_IPC, int $workerId = 0)
+    public function __construct($callback, bool $isDaemon = false, int $ipcType = IpcFactory::UNIX_SOCKET_IPC, int $workerId = 0)
     {
         $this->workerId = $workerId;
         $this->tempFile = stream_get_meta_data(tmpfile())['uri'];
