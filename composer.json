@@ -10,7 +10,11 @@
     "type": "library",
     "minimum-stability": "dev",
     "license": "MIT",
-    "require": {},
+    "require": {
+      "ext-pcntl": "*",
+        "ext-posix": "*",
+        "ext-mbstring": "*"
+    },
     "autoload": {
         "psr-4": {
             "Bobby\\MultiProcesses\\": "src/"

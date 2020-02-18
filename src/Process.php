@@ -80,6 +80,7 @@ class Process
 
     /** 写入消息,可以写入任务类型。会字段对消息进行序列化
      * @param $message
+     * @throws ProcessException
      */
     public function write($message)
     {
@@ -98,6 +99,7 @@ class Process
     /** 读取消息(对消息进行反序列化)
      * @param bool $block
      * @return string
+     * @throws ProcessException
      */
     public function read(bool $block = true)
     {
@@ -107,6 +109,7 @@ class Process
     /** 读取字符串消息(不对消息进行反序列化)
      * @param bool $block
      * @return string
+     * @throws ProcessException
      */
     public function readString(bool $block = true): string
     {
@@ -127,6 +130,7 @@ class Process
 
     /** 创建进程间通信通道
      * @return IpcContract
+     * @throws ProcessException
      */
     protected function getIpc(): IpcContract
     {
@@ -162,7 +166,6 @@ class Process
     {
         if (($pid = pcntl_fork()) < 0) {
             throw new ProcessException("Fork child process fail.");
-            Quit::exceptionQuit();
         }
 
         if ($pid === 0) {
@@ -170,12 +173,10 @@ class Process
 
             if (posix_setsid() === -1) {
                 throw new ProcessException("Create session fail.");
-                Quit::exceptionQuit();
             };
 
             if (($daemonPid = pcntl_fork()) < 0) {
                 throw new ProcessException("Fork damon child process fail.");
-                Quit::exceptionQuit();
             }
 
             if ($daemonPid > 0) {
@@ -209,7 +210,6 @@ class Process
     {
         if (($pid = pcntl_fork()) < 0) {
                 throw new ProcessException("Fork child process fail.");
-                exit(static::EXCEPTION_EXIT);
         }
 
         if ($pid > 0) {
@@ -232,6 +232,7 @@ class Process
 
     /**
      *  关闭进程通信通道
+     * @throws ProcessException
      */
     public function closeIpc()
     {
@@ -240,6 +241,7 @@ class Process
 
     /**
      *  释放进程通信资源
+     * @throws ProcessException
      */
     public function clearIpc()
     {

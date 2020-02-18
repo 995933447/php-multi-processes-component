@@ -162,7 +162,7 @@ class Pool
                             unset($this->runningWorkers[$index]);
                             
                             if ($this->runningWorkers->isEmpty()) {
-                                $this->closeInterProcessShareMemory();
+                                $this->closePoolShareMemory();
                                 break;
                             }
                         }
@@ -195,8 +195,8 @@ class Pool
     /**
      *  关闭进程池共享内存段
      */
-    public function closeInterProcessShareMemory()
+    public function closePoolShareMemory()
     {
-        if ($this->interProcessShareMemory instanceof InterProcessShareMemory) $this->interProcessShareMemory->release();
+        if ($this->poolShareMemory instanceof InterProcessShareMemory) $this->poolShareMemory->release();
     }
 }

@@ -22,7 +22,6 @@ class InterProcessShareMemory
         $key = ftok($this->tempFile, $memoryTokenKey{0});
         if (!$this->memoryResource = shm_attach($key)) {
             throw new ProcessException("Create inter-process share memory fail.");
-            Quit::exceptionQuit();
         }
 
         file_exists($this->tempFile) && unlink($this->tempFile);
