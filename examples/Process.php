@@ -17,7 +17,7 @@ $process = new Process(function (Process $process) {
     echo "My master send data3:$masterData to me." . PHP_EOL . PHP_EOL;
 
     $process->clearIpc();
-    
+
     echo "exit $pid" . PHP_EOL;
 }, true, IpcFactory::PIPES_IPC);
 
@@ -29,7 +29,7 @@ declare(ticks = 1);
 Process::onCollect();
 
 $processes = [];
-for ($i = 0; $i < 4; $i++) {
+for ($i = 0; $i < 6; $i++) {
     $processCloned = clone $process;
     $pid = $processCloned->run();
     echo "I am father, my pid is " . posix_getpid() . ", my children is $pid" . PHP_EOL . PHP_EOL;

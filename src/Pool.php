@@ -15,7 +15,7 @@ class Pool
 
     protected $runningWorkers;
 
-    protected $interProcessShareMemory;
+    protected $poolShareMemory;
 
     protected $poolId;
 
@@ -82,7 +82,7 @@ class Pool
      * @param int $workerId
      * @return Worker
      */
-    public function addWorker(int $workerId)
+    public function addWorker(int $workerId): Worker
     {
         $worker = clone $this->workerPrototype;
         $worker->setWorkId($workerId);
@@ -142,6 +142,10 @@ class Pool
      */
     public function onCollect($callback = null)
     {
+        if (function_exists("pcntl_async_signals") && !pcntl_async_signals()) {
+            pcntl_async_signals(true);
+        }
+
         if (in_array($callback, [SIG_IGN, SIG_DFL], true)) {
             pcntl_signal(SIGCHLD, $callback);
         } else {
@@ -180,12 +184,12 @@ class Pool
      * @return InterProcessShareMemory
      * @throws ProcessException
      */
-    public function openInterProcessShareMemory()
+    public function openPoolShareMemory(): InterProcessShareMemory
     {
-        if (!$this->interProcessShareMemory) { 
-           $this->interProcessShareMemory = new InterProcessShareMemory($this->poolId, false);
+        if (!$this->poolShareMemory) {
+           $this->poolShareMemory = new InterProcessShareMemory($this->poolId, false);
         }
-        return $this->interProcessShareMemory;
+        return $this->poolShareMemory;
     }
 
     /**

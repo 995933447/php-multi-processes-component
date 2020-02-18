@@ -109,11 +109,6 @@ class Worker extends Process
         @flock($this->lockFile, LOCK_UN);
     }
 
-    public function __toString()
-    {
-        return $this->getWorkerId();
-    }
-
     public function __destruct()
     {
         file_exists($this->tempFile) && unlink($this->tempFile);

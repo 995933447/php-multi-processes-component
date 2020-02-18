@@ -20,6 +20,8 @@ class Process
 
     protected $isMaster = true;
 
+    protected $isForked = false;
+
     protected $name;
 
     protected $pid;
@@ -90,7 +92,7 @@ class Process
      */
     public function writeString(string $message)
     {
-        $this->makeIpc()->write($message);
+        $this->getIpc()->write($message);
     }
 
     /** 读取消息(对消息进行反序列化)
@@ -108,13 +110,13 @@ class Process
      */
     public function readString(bool $block = true): string
     {
-        return $this->makeIpc()->read($block);
+        return $this->getIpc()->read($block);
     }
 
     /** 初始化并创建进程间通信对象
      * @return IpcContract
      */
-    protected function initIpc(): IpcContract
+    protected function makeIpc(): IpcContract
     {
         if (!$this->ipc) {
             $this->ipc = IpcFactory::make($this->ipcType, new MessagePacker(md5(__FILE__ . '~!@')));
@@ -126,9 +128,13 @@ class Process
     /** 创建进程间通信通道
      * @return IpcContract
      */
-    protected function makeIpc(): IpcContract
+    protected function getIpc(): IpcContract
     {
-        $this->ipc->bindPortWithProcess($this->isMaster);
+        if (!$this->isForked) {
+            throw new ProcessException("Please use ipc read or write after run.");
+        }
+
+        $this->makeIpc()->bindPortWithProcess($this->isMaster);
         return $this->ipc;
     }
 
@@ -138,7 +144,9 @@ class Process
      */
     public function run()
     {
-        $this->initIpc();
+        $this->isForked = true;
+
+        $this->makeIpc();
       
         if ($this->isDaemon)
             return $this->startAsDaemon();
@@ -227,7 +235,7 @@ class Process
      */
     public function closeIpc()
     {
-        $this->makeIpc()->close();
+        $this->getIpc()->close();
     }
 
     /**
@@ -235,7 +243,7 @@ class Process
      */
     public function clearIpc()
     {
-        $this->makeIpc()->clear();
+        $this->getIpc()->clear();
     }
 
     /** 子进程信号处理器
@@ -243,6 +251,10 @@ class Process
      */
     public static function onCollect($callback = null)
     {
+        if (function_exists("pcntl_async_signals") && !pcntl_async_signals()) {
+            pcntl_async_signals(true);
+        }
+
         pcntl_signal(SIGCHLD, !is_null($callback)? $callback: function ($signo) {
             while (1) {
                 if (pcntl_wait($status, WNOHANG) <= 0) {

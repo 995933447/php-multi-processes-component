@@ -259,7 +259,7 @@ public \Bobby\MultiProcesses\Pool::broadcastString($message)\
 public \Bobby\MultiProcesses\Pool::onCollect($callback = null)\
 注册子进程信号处理器\
 $callback 回收子进程前触发的回调函数.回调里请不要写子进程回收逻辑,该方法执行完$callback后将自动回收子进程资源并释放相应进程池内于进程相关的资源,和\Bobby\MultiProcesses\Process::onCollect方法不同.\
-注意:使用该方法后一定要在父进程declare(ticks = 1)或者在脚本尾部使用\Bobby\MultiProcesses\Process::collect进行监信号,否则子进程不会触发.
+注意:php7.1(仅php7.1以前的版本)之前使用该方法后一定要在父进程declare(ticks = 1)或者在脚本尾部使用\Bobby\MultiProcesses\Process::collect进行监信号,否则无法捕捉信号.
 
 public static \Bobby\MultiProcesses\Pool::collect()
 阻塞监听子进程信号,该方法会一直导致脚本阻塞,需要手动中断脚本退出

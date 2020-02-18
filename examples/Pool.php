@@ -27,7 +27,6 @@ $pool = new Pool(5, $worker);
 // 设置启动时最少可用worker进程数量。不设置的话则默认和进程池最大数量相同
 $pool->setMinIdleWorkersNum(2);
 
-declare(ticks = 1);
 $pool->onCollect();
 
 $pool->run();
@@ -55,7 +54,7 @@ while (1) {
 
     echo "poped:" . $worker->getWorkerId() . PHP_EOL;
     $worker->write("\ ^ . ^ /");
-//    sleep(1);
+    sleep(1);
     $n++;
     $runningWorkersNum = $pool->getWorkersNum();
     if ($n >= 100 * $runningWorkersNum) {
