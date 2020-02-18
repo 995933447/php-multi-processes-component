@@ -69,7 +69,8 @@ class Pool
      */
     public function run()
     {
-        for ($i = 0; $i < $this->getMinIdleWorkersNum(); $i++) {
+        $minIdleWorkerNum = $this->getMinIdleWorkersNum();
+        for ($i = 0; $i < $minIdleWorkerNum; $i++) {
             $this->addWorker($i + $this->workerPrototype->getWorkerId());
         }
 
