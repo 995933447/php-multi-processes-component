@@ -82,18 +82,18 @@ class Process
      * @param $message
      * @throws ProcessException
      */
-    public function write($message)
+    public function write($message): int
     {
-        $this->writeString(MessagePacker::serialize($message));
+        return $this->writeString(MessagePacker::serialize($message));
     }
 
     /** 写入字符串消息,消息仅允许字符串类型
      * @param string $message
      * @throws ProcessException
      */
-    public function writeString(string $message)
+    public function writeString(string $message): int
     {
-        $this->getIpc()->write($message);
+        return $this->getIpc()->write($message);
     }
 
     /** 读取消息(对消息进行反序列化)
