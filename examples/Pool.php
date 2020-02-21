@@ -11,19 +11,26 @@ $worker = new Worker(function (Worker $worker) {
     while ($masterData = $worker->read()) {
         // 将当前进程设置为任务进行中状态
         $worker->lock();
+
         $requestTime++;
+
         echo "I am worker:$workerId,My master send data:$masterData to me." . PHP_EOL;
+
         sleep(2);
+
         if ($requestTime >= 100) break;
         // 将当前进程设置为闲置可用状态
+
         $worker->free();
     }
 
     echo "Work:$workerId exit($masterData)" . PHP_EOL;
 }, true);
+
 $worker->setName('Pool worker');
 
 $pool = new Pool(5, $worker);
+
 // 设置启动时最少可用worker进程数量。不设置的话则默认和进程池最大数量相同
 $pool->setMinIdleWorkersNum(2);
 
@@ -52,9 +59,12 @@ while (1) {
         continue;
     }
 
-    echo "poped:" . $worker->getWorkerId() . PHP_EOL;
+    echo "Using worker:" . $worker->getWorkerId() . PHP_EOL;
+
     $worker->write("\ ^ . ^ /");
+
     sleep(1);
+
     $n++;
     $runningWorkersNum = $pool->getWorkersNum();
     if ($n >= 100 * $runningWorkersNum) {
@@ -62,5 +72,3 @@ while (1) {
         break;
     }
 }
-
-//Pool::collect();

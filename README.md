@@ -3,48 +3,52 @@
 \
 快速入门:
 ```php
-<?php
 require __DIR__ . '/../vendor/autoload.php';
 
-use Bobby\MultiProcesses\Ipcs\IpcFactory;
 use Bobby\MultiProcesses\Process;
 
 $process = new Process(function (Process $process) {
     echo "Hello, Im children, My pid is " . ($pid = $process->getPid()) . PHP_EOL . PHP_EOL;
 
+    // 阻塞等待数据
     $masterData = $process->read();
     echo "My master send data:$masterData to me." . PHP_EOL . PHP_EOL;
 
+    // 阻塞等待数据
     $masterData = $process->read();
     echo "My master send data2:$masterData to me." . PHP_EOL . PHP_EOL;
 
+    // 阻塞等待数据
     $masterData = $process->read();
     echo "My master send data3:$masterData to me." . PHP_EOL . PHP_EOL;
 
+    // 关闭进程间通信和释放进程间通信资源
     $process->clearIpc();
-    
-    echo "exit $pid" . PHP_EOL;
-}, true, IpcFactory::UNIX_SOCKET_IPC);
 
+    echo "exit $pid" . PHP_EOL;
+}, true);
+
+// 设置子进程名称
 $process->setName("child php process.");
 
+// 设置主进程名称
 cli_set_process_title("parent php process.");
 
-declare(ticks = 1);
-// 信号注册的时机要合适 因为如果产生子信号 而这个时候父进程还没有注册处理器 PHP就会使用系统默认的信号处理器
+declare(ticks = 1); // PHP7支持异步监听信号，可不声明TICK
+// 信号注册的时机要合适 因为如果产生子信号 而这个时候父进程还没有注册处理器 PHP就会使用系统默认的信号处理器。
 Process::onCollect();
 
 $processes = [];
-for ($i = 0; $i < 4; $i++) {
+for ($i = 0; $i < 6; $i++) {
     $processCloned = clone $process;
     $pid = $processCloned->run();
     echo "I am father, my pid is " . posix_getpid() . ", my children is $pid" . PHP_EOL . PHP_EOL;
-    $processCloned->write("Hello my child!");
-    $processCloned->write('Hello my child 2!');
     $processes[] = $processCloned;
 }
 
 foreach ($processes as $process) {
+    $process->write("Hello my child!");
+    $process->write('Hello my child 2!');
     $process->write('Hello my child 3!');
 }
 
@@ -117,24 +121,30 @@ $worker = new Worker(function (Worker $worker) {
 
     while ($masterData = $worker->read()) {
         // 将当前进程设置为任务进行中状态
-        $worker->use();
+        $worker->lock();
+
         $requestTime++;
+
         echo "I am worker:$workerId,My master send data:$masterData to me." . PHP_EOL;
+
         sleep(2);
+
         if ($requestTime >= 100) break;
         // 将当前进程设置为闲置可用状态
+
         $worker->free();
     }
 
     echo "Work:$workerId exit($masterData)" . PHP_EOL;
 }, true);
+
 $worker->setName('Pool worker');
 
 $pool = new Pool(5, $worker);
+
 // 设置启动时最少可用worker进程数量。不设置的话则默认和进程池最大数量相同
 $pool->setMinIdleWorkersNum(2);
 
-declare(ticks = 1);
 $pool->onCollect();
 
 $pool->run();
@@ -147,12 +157,11 @@ for ($i = 0; $i < $workersNum; $i++) {
 
 $pool->broadcast("broadcasting.");
 
-// 这里和功能示例无关,只是为了说明在多进程中使用sleep会碰到的意外情况.
 // sleep函数会被进程信号中断
 // 此函数使调用进程被挂起，直到满足以下条件之一：
 // 1)已经过了seconds所指定的墙上时钟时间
 // 2)调用进程捕捉到一个信号并从信号处理程序返回
-echo "Sleep函数被打断的剩余时间:" . sleep(10);
+var_dump(sleep(10));
 
 $n = 0;
 // 当发现进程池中没有可用闲置进程时 将动态fork出新的子进程知道到达进程池最大进程数量为止
@@ -160,18 +169,20 @@ while (1) {
     if (!$worker = $pool->getIdleWorker()) {
         continue;
     }
-    echo "poped:" . $worker->getWorkerId() . PHP_EOL;
+
+    echo "Using worker:" . $worker->getWorkerId() . PHP_EOL;
+
     $worker->write("\ ^ . ^ /");
+
     sleep(1);
+
     $n++;
-    echo "Workers num:" . ($runningWorkersNum = $pool->getWorkersNum()) . PHP_EOL;
+    $runningWorkersNum = $pool->getWorkersNum();
     if ($n >= 100 * $runningWorkersNum) {
         var_dump($n);
         break;
     }
 }
-
-//Pool::collect();
 ```
 
 \Bobby\MultiProcesses\Worker\
