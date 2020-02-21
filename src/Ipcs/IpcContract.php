@@ -18,7 +18,7 @@ abstract class IpcContract
 
     abstract protected function getWritePort(); 
 
-    public function write(string $message)
+    public function write(string $message): int
     {
         if (($written = fwrite($writePort = $this->getWritePort(), $this->messagePacker->pack($message))) === false) {
             throw new ProcessException("write pipe $message fail.");

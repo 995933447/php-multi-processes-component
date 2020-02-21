@@ -6,7 +6,7 @@ use Bobby\MultiProcesses\MessagePacker;
 
 class UnixSocket extends IpcContract
 {
-    protected $useSocket;
+    protected $usedSocket;
 
     protected $unixSockets;
 
@@ -23,32 +23,31 @@ class UnixSocket extends IpcContract
 
     public function bindPortWithProcess(bool $currentIsMaster)
     {
-        if (!$this->usePort()) {
-            $this->useSocket = $this->unixSockets[$currentIsMaster? 0: 1];
+        if (!$this->getUsedPort()) {
+            $this->usedSocket = $this->unixSockets[$currentIsMaster? 0: 1];
+            stream_set_blocking($this->usedSocket, false);
             fclose($this->unixSockets[$currentIsMaster? 1: 0]);
         }
     }
 
-    public function usePort()
+    public function getUsedPort()
     {
-        return $this->useSocket;
+        return $this->usedSocket;
     }
 
     protected function getWritePort()
     {
-        stream_set_blocking($port = $this->usePort(), true);
-        return $port;
+        return $this->getUsedPort();
     }
 
     protected function getReadPort()
     {        
-        stream_set_blocking($port = $this->usePort(), false);
-        return $this->usePort();
+        return $this->getUsedPort();
     }
 
     public function close()
     {
-        fclose($this->usePort());
+        fclose($this->getUsedPort());
     }
 
     public function clear()

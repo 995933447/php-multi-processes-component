@@ -19,7 +19,7 @@ $process = new Process(function (Process $process) {
     $process->clearIpc();
 
     echo "exit $pid" . PHP_EOL;
-}, true, IpcFactory::PIPES_IPC);
+}, true);
 
 $process->setName("child php process.");
 
