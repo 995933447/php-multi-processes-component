@@ -22,7 +22,7 @@ $worker = new Worker(function (Worker $worker) use ($times, $minIdleWorkersNum) 
 
         sleep(1);
 
-        if ($workerId < 2 && $workTimes >= (2 + $times)) break;
+        if ($workerId < $minIdleWorkersNum && $workTimes >= (2 + $times)) break;
         if ($workerId >= $minIdleWorkersNum && $workTimes >= $times) break;
 
         // 将当前进程设置为闲置可用状态

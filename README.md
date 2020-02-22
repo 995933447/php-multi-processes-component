@@ -109,6 +109,9 @@ public static \Bobby\MultiProcesses\Process::collect()
 
 快速入门:
 ```php
+<?php
+require __DIR__ . '/../vendor/autoload.php';
+
 use Bobby\MultiProcesses\Worker;
 use Bobby\MultiProcesses\Pool;
 
@@ -130,7 +133,7 @@ $worker = new Worker(function (Worker $worker) use ($times, $minIdleWorkersNum) 
 
         sleep(1);
 
-        if ($workerId < 2 && $workTimes >= (2 + $times)) break;
+        if ($workerId < $minIdleWorkersNum && $workTimes >= (2 + $times)) break;
         if ($workerId >= $minIdleWorkersNum && $workTimes >= $times) break;
 
         // 将当前进程设置为闲置可用状态
