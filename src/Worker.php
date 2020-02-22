@@ -114,7 +114,7 @@ class Worker extends Process
             flock($this->lockFile, LOCK_UN);
         }
 
-        return !$isFree;
+        return !file_exists($this->lockFileName) || !$isFree;
     }
 
     /** 设置当前Worker对象是正在执行任务状态
