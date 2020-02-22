@@ -139,7 +139,6 @@ $worker = new Worker(function (Worker $worker) use ($times, $minIdleWorkersNum) 
         // 将当前进程设置为闲置可用状态
         $worker->free();
     }
-    echo "first exits $workerId\n";
 
     $worker->write("Worker:$workerId exited, finish work times: $workTimes." . PHP_EOL);
 }, true);
