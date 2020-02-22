@@ -57,7 +57,7 @@ class Worker extends Process
     public function getPool(): Pool
     {
         if (is_null($this->pool)) {
-            throw new ProcessException("Property pool dose not set.");
+            throw new ProcessException("The Worker didn't bind pool.");
         }
 
         return $this->pool;
