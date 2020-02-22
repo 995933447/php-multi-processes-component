@@ -47,11 +47,11 @@ class UnixSocket extends IpcContract
 
     public function close()
     {
-        fclose($this->getUsedPort());
+        @fclose($this->getUsedPort());
     }
 
     public function clear()
     {
-
+        $this->close();
     }
 }

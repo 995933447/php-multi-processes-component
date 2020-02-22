@@ -72,11 +72,12 @@ class Pipes extends IpcContract
 
     public function close()
     {
-        $this->writePort && fclose($this->writePort) && $this->readPort && fclose($this->readPort);
+        $this->writePort && @fclose($this->writePort) && $this->readPort && @fclose($this->readPort);
     }
 
     public function clear()
     {
+        $this->close();
         file_exists($this->writablePipe) && unlink($this->writablePipe) && file_exists($this->readablePipe) && unlink($this->readablePipe);
     }
 }
