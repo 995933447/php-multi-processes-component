@@ -80,6 +80,7 @@ class Process
 
     /** 写入消息,可以写入任务类型。会字段对消息进行序列化
      * @param $message
+     * @return int
      * @throws ProcessException
      */
     public function write($message): int
@@ -89,6 +90,7 @@ class Process
 
     /** 写入字符串消息,消息仅允许字符串类型
      * @param string $message
+     * @return int
      * @throws ProcessException
      */
     public function writeString(string $message): int
@@ -190,7 +192,7 @@ class Process
 
                 chdir('/');
 
-                call_user_func_array($this->callback, array_merge([$this], func_get_args()));
+                call_user_func_array($this->callback, [$this]);
 
                 $this->closeIpc();
                 $this->clearIpc();

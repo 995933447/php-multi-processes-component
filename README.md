@@ -109,50 +109,54 @@ public static \Bobby\MultiProcesses\Process::collect()
 
 快速入门:
 ```php
-<?php
-require __DIR__ . '/../vendor/autoload.php';
-
 use Bobby\MultiProcesses\Worker;
 use Bobby\MultiProcesses\Pool;
 
-$worker = new Worker(function (Worker $worker) {
+$times = 10;
+$minIdleWorkersNum = 2;
+$maxWorkerNum = 5;
+
+$worker = new Worker(function (Worker $worker) use ($times, $minIdleWorkersNum) {
     $workerId = $worker->getWorkerId();
-    $requestTime = 0;
+    $workTimes = 0;
 
     while ($masterData = $worker->read()) {
         // 将当前进程设置为任务进行中状态
         $worker->lock();
 
-        $requestTime++;
+        $workTimes++;
 
         echo "I am worker:$workerId,My master send data:$masterData to me." . PHP_EOL;
 
-        sleep(2);
+        sleep(1);
 
-        if ($requestTime >= 100) break;
+        if ($workerId < 2 && $workTimes >= (2 + $times)) break;
+        if ($workerId >= $minIdleWorkersNum && $workTimes >= $times) break;
+
         // 将当前进程设置为闲置可用状态
-
         $worker->free();
     }
+    echo "first exits $workerId\n";
 
-    echo "Work:$workerId exit($masterData)" . PHP_EOL;
+    $worker->write("Worker:$workerId exited, finish work times: $workTimes." . PHP_EOL);
 }, true);
 
 $worker->setName('Pool worker');
 
-$pool = new Pool(5, $worker);
+$pool = new Pool($maxWorkerNum, $worker);
 
 // 设置启动时最少可用worker进程数量。不设置的话则默认和进程池最大数量相同
-$pool->setMinIdleWorkersNum(2);
+$pool->setMinIdleWorkersNum($minIdleWorkersNum);
 
+// PHP7意思可以异步监听子进程信号不需要声明TICKS
 $pool->onCollect();
 
 $pool->run();
 
 $workersNum = $pool->getWorkersNum();
 for ($i = 0; $i < $workersNum; $i++) {
-    $msg =  "Master sending to worker:" . $worker->getWorkerId();
-    $pool->getWorker()->write($msg);
+    $worker = $pool->getWorker();
+    $worker->write("Master sending to worker:" . $worker->getWorkerId());
 }
 
 $pool->broadcast("broadcasting.");
@@ -161,7 +165,7 @@ $pool->broadcast("broadcasting.");
 // 此函数使调用进程被挂起，直到满足以下条件之一：
 // 1)已经过了seconds所指定的墙上时钟时间
 // 2)调用进程捕捉到一个信号并从信号处理程序返回
-var_dump(sleep(10));
+//var_dump(sleep(10));
 
 $n = 0;
 // 当发现进程池中没有可用闲置进程时 将动态fork出新的子进程知道到达进程池最大进程数量为止
@@ -174,14 +178,19 @@ while (1) {
 
     $worker->write("\ ^ . ^ /");
 
-    sleep(1);
+    usleep(50000);
 
     $n++;
     $runningWorkersNum = $pool->getWorkersNum();
-    if ($n >= 100 * $runningWorkersNum) {
-        var_dump($n);
+    if ($n >= $times * $runningWorkersNum) {
+        echo "Master send total messages:$n.\n";
         break;
     }
+}
+
+while ($maxWorkerNum--) {
+    echo ($worker = $pool->getWorker())->read();
+    $worker->clearIpc();
 }
 ```
 
@@ -216,28 +225,33 @@ $maxWorkersNum 进程池最大允许进程数量.\
 $worker  \Bobby\MultiProcesses\Worker对象.进程池将根据传入Worker对象的worker ID为起点,为创建的进程递增复制workerID.\
 $poolId 进程池ID.
 ```php
-// worker id 默认为0
 $worker = new Worker(function (Worker $worker) {
     $workerId = $worker->getWorkerId();
     $requestTime = 0;
 
     while ($masterData = $worker->read()) {
         // 将当前进程设置为任务进行中状态
-        $worker->use();
+        $worker->lock();
+
         $requestTime++;
+
         echo "I am worker:$workerId,My master send data:$masterData to me." . PHP_EOL;
+
         sleep(2);
+
         if ($requestTime >= 100) break;
         // 将当前进程设置为闲置可用状态
+
         $worker->free();
     }
 
     echo "Work:$workerId exit($masterData)" . PHP_EOL;
 }, true);
+
 $worker->setName('Pool worker');
 
-// 设置最大允许产生5个进程,5个进程的worker ID分别是0,1,2,3,4.
 $pool = new Pool(5, $worker);
+
 ```
 public \Bobby\MultiProcesses\Pool::setMinIdleWorkersNum(int $num)\
 设置进程池实际运行时的worker进程数量.配合public \Bobby\MultiProcesses\Pool::getIdleWorker()使用.当所有worker都处于繁忙状态,进程池将动态fork出新的worker进程知道到达最大允许进程数量.如果调用该方法设置.则默认值为最大允许进程数量,由构造函数传入.

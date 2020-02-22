@@ -86,7 +86,7 @@ class Pool
     public function addWorker(int $workerId): Worker
     {
         $worker = clone $this->workerPrototype;
-        $worker->setWorkId($workerId);
+        $worker->init($workerId);
         $this->runningWorkers->enqueue($worker);
         return $worker;
     }
@@ -107,9 +107,13 @@ class Pool
     public function getIdleWorker(): ?Worker
     {
         $runningWorkersNum = count($this->runningWorkers);
+
         $n = 0;      
-        while(($worker = $this->getWorker()) && $worker->isLock() && ++$n <= $runningWorkersNum);
-        if (!$worker->isLock()) return $worker;
+        while(($worker = $this->getWorker()) && $worker->isBusy() && ++$n <= $runningWorkersNum);
+
+        if (!$worker->isBusy()) {
+            return $worker;
+        }
 
         if ($runningWorkersNum < $this->getMaxWorkersNum()) {
             $worker = $this->addWorker($this->workerPrototype->getWorkerId() + $runningWorkersNum);
