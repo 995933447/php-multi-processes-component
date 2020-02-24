@@ -50,10 +50,10 @@ class MessagePacker
         $this->unpackMessages .= $message;
         
         if (($lastEofPos = strrpos($this->unpackMessages, $messageEof = $this->getMessageEof())) !== false) {
-            $ablePackMessage = mb_substr($this->unpackMessages, 0, ++$lastEofPos + ($eofLen = mb_strlen($messageEof)));
-            $this->unpackMessages = mb_substr($this->unpackMessages, $lastEofPos + $eofLen);
+            $ablePackMessage = substr($this->unpackMessages, 0, ++$lastEofPos + ($eofLen = strlen($messageEof)));
+            $this->unpackMessages = substr($this->unpackMessages, $lastEofPos + $eofLen);
             if (($messageNum = substr_count($ablePackMessage, $messageEof)) === 1) {
-                $this->packedMessages[] = mb_substr($ablePackMessage, 0, $lastEofPos - 1);
+                $this->packedMessages[] = substr($ablePackMessage, 0, $lastEofPos - 1);
             } else {
                 $this->packedMessages += explode($messageEof, $ablePackMessage, $messageNum);
             }
