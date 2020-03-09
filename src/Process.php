@@ -10,7 +10,7 @@ use Bobby\MultiProcesses\Ipcs\IpcFactory;
  */
 class Process
 {
-    public $ipc;
+    protected $ipc;
 
     protected $ipcType;
 
