@@ -25,7 +25,6 @@ class UnixSocket extends IpcContract
     {
         if (!$this->getUsedPort()) {
             $this->usedSocket = $this->unixSockets[$currentIsMaster? 0: 1];
-            stream_set_blocking($this->usedSocket, false);
             fclose($this->unixSockets[$currentIsMaster? 1: 0]);
         }
     }

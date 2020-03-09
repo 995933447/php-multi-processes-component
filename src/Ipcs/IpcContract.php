@@ -18,9 +18,11 @@ abstract class IpcContract
 
     abstract protected function getWritePort(); 
 
-    public function write(string $message): int
+    public function write(string $message, bool $block = true): int
     {
-        if (($written = fwrite($writePort = $this->getWritePort(), $this->messagePacker->pack($message))) === false) {
+        stream_set_blocking($writePort = $this->getWritePort(), $block);
+
+        if (($written = fwrite($writePort, $this->messagePacker->pack($message))) === false) {
             throw new ProcessException("write pipe $message fail.");
             Quit::exceptionQuit();
         };
@@ -38,7 +40,7 @@ abstract class IpcContract
             return $this->messagePacker->getMessageFromBuffer();
         }
 
-        $readPort = $this->getReadPort();
+        stream_set_blocking($readPort = $this->getReadPort(), false);
         $writes = $excepts = [];
         while (1) {
             $reads = [$readPort];

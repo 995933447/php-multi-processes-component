@@ -83,9 +83,9 @@ class Process
      * @return int
      * @throws ProcessException
      */
-    public function write($message): int
+    public function write($message, bool $block = true): int
     {
-        return $this->writeString(MessagePacker::serialize($message));
+        return $this->writeString(MessagePacker::serialize($message), $block);
     }
 
     /** 写入字符串消息,消息仅允许字符串类型
@@ -93,9 +93,9 @@ class Process
      * @return int
      * @throws ProcessException
      */
-    public function writeString(string $message): int
+    public function writeString(string $message, bool $block = true): int
     {
-        return $this->getIpc()->write($message);
+        return $this->getIpc()->write($message, $block);
     }
 
     /** 读取消息(对消息进行反序列化)

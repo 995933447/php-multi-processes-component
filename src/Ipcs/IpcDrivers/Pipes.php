@@ -65,7 +65,6 @@ class Pipes extends IpcContract
         if (!$this->readPort) {
             $this->makePipe($this->readablePipe);
             $this->readPort = fopen($this->readablePipe, 'r');
-            stream_set_blocking($this->readPort, false);
         }
         return $this->readPort;
     }
